@@ -1,6 +1,6 @@
 # LG AC Menu Bar
 
-Controle o seu ar-condicionado LG direto da barra de menu do macOS, ao lado do Wi-Fi, som e bateria — sem pegar o celular.
+Controle o seu ar-condicionado LG direto da barra de menu do macOS, sem pegar o celular.
 
 > **Status: em desenvolvimento.** O design está definido em [`docs/superpowers/specs/2026-10-13-lg-ac-menubar-design.md`](docs/superpowers/specs/2026-10-13-lg-ac-menubar-design.md). As instruções de build e uso abaixo descrevem como o app vai funcionar quando a implementação estiver pronta.
 
