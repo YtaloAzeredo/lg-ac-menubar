@@ -121,7 +121,7 @@ Para só gerar o bundle em `dist/LG AC.app`, sem instalar: `./build-app.sh --no-
 3. Escolha o país (padrão: **Brasil**). O país define o servidor da LG usado (Brasil → região AIC).
 4. Clique em **Conectar**. O app encontra o seu ar-condicionado automaticamente e passa a mostrar os controles. Se a conta tiver mais de um ar-condicionado, aparece uma lista para você escolher qual controlar.
 
-O token fica guardado no **Keychain** do macOS. Para trocar, use **⚙ → Trocar token…**.
+O token fica guardado no **Keychain** do macOS. Para trocar, use **⚙ → Trocar token…**. Para controlar outro ar-condicionado da mesma conta, clique na seta **‹** no canto superior esquerdo do painel (ou **⚙ → Trocar aparelho…**). A troca não pede o token nem a senha do Mac.
 
 ## Uso
 
@@ -135,6 +135,7 @@ O token fica guardado no **Keychain** do macOS. Para trocar, use **⚙ → Troca
 | Luz do visor | Chave "Luz do visor" |
 | Timer para desligar | Menu "Desligar em" (escolha "Desativado" para cancelar) |
 | Atualizar agora | Botão ⟳ no rodapé |
+| Trocar de aparelho | Seta **‹** no canto superior esquerdo (ou **⚙ → Trocar aparelho…**) e escolha na lista ("Cancelar" volta ao atual) |
 | Abrir ao iniciar sessão / sair | Menu ⚙ no rodapé |
 
 Com o ar desligado, os controles ficam esmaecidos — só o botão ⏻ funciona.
@@ -164,7 +165,7 @@ Mudanças feitas pelo controle remoto ou pelo app do celular aparecem em até 5 
 | "Limite de chamadas atingido" | Muitas requisições à API (código `1306`) | Nada — o app espaça as consultas automaticamente (até 30 min) e volta ao normal sozinho |
 | Comando volta ao valor anterior | O aparelho recusou o comando no estado atual (códigos `2205`, `2207`, `2301`–`2305`) | Ex.: alguns modos não aceitam mudar a temperatura ou o ventilador; veja a mensagem no rodapé |
 | "Nenhum ar-condicionado encontrado" | Token sem permissão ou país errado | Confira as permissões do token e o país escolhido |
-| Apareceu o aparelho errado ou offline | A conta tem mais de um ar-condicionado e foi escolhido o outro | **⚙ → Trocar token…** e escolha o outro na lista (o menu ⚙ também aparece na tela de carregamento com erro e na de escolha do aparelho) |
+| Apareceu o aparelho errado ou offline | A conta tem mais de um ar-condicionado e foi escolhido o outro | Seta **‹** no canto superior esquerdo (também na tela de carregamento) e escolha o outro na lista |
 | Um controle não aparece | O seu modelo não suporta esse recurso | Esperado — o app só mostra o que o profile do aparelho declara |
 | macOS pede acesso ao Keychain depois de reinstalar | A assinatura ad-hoc muda a cada build, e o Keychain trata como outro app | Digite a senha do Mac e clique em **Sempre Permitir** |
 
@@ -254,7 +255,7 @@ O design completo, com payloads, formato do profile e tabela de erros, está em 
 
 ## Fora do escopo
 
-- Controlar vários aparelhos.
+- Controlar vários aparelhos ao mesmo tempo (dá para alternar entre eles pela seta **‹** do painel).
 - Atualização em tempo real via MQTT (exige registro de certificados na AWS IoT da LG).
 - Widget/Controle dentro da Central de Controle (exige Xcode e perfil de desenvolvedor Apple).
 - Distribuição pela App Store / notarização.

@@ -40,5 +40,11 @@ struct LoadingView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(20)
+        .overlay(alignment: .topLeading) {
+            // Ex.: o aparelho escolhido está offline — dá para trocar sem esperar.
+            if controller.canSwitchDevice {
+                SwitchDeviceButton(controller: controller).padding(10)
+            }
+        }
     }
 }

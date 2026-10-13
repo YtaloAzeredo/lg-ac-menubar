@@ -26,13 +26,18 @@ public final class ACController {
     public internal(set) var statusMessage: String?
     public internal(set) var isDeviceOffline = false
     public internal(set) var pollInterval: Duration = ACController.basePollInterval
+    /// A escolha de aparelho veio de "Trocar aparelho…" (dá para cancelar e voltar ao atual).
+    public internal(set) var isSwitchingDevice = false
+    /// Há um aparelho conectado para trocar por outro (a troca reaproveita a conexão, sem ler o token).
+    public var canSwitchDevice: Bool { client != nil }
 
     @ObservationIgnored let store: any CredentialStoring
     @ObservationIgnored let makeClient: @Sendable (ThinQCredentials) throws -> any ThinQClientProtocol
     @ObservationIgnored let sleep: @Sendable (Duration) async throws -> Void
     @ObservationIgnored let now: @Sendable () -> Date
     @ObservationIgnored var client: (any ThinQClientProtocol)?
-    @ObservationIgnored var pendingSetup: (client: any ThinQClientProtocol, token: String)?
+    /// Cliente à espera da escolha do aparelho; `token` só existe quando é um token novo, ainda não salvo.
+    @ObservationIgnored var pendingSetup: (client: any ThinQClientProtocol, token: String?)?
     @ObservationIgnored var pollTask: Task<Void, Never>?
     /// Geração da sessão (token + aparelho); um `refresh` em andamento descarta o resultado se ela mudar.
     @ObservationIgnored var session = 0
@@ -99,17 +104,58 @@ public final class ACController {
 
     public func selectDevice(_ device: ThinQDevice) async {
         guard let pendingSetup else { return }
-        do {
-            try store.saveToken(pendingSetup.token)
-        } catch {
-            phase = .needsSetup(message: "Não foi possível salvar o token no Keychain")
-            return
+        if let token = pendingSetup.token {
+            do {
+                try store.saveToken(token)
+            } catch {
+                phase = .needsSetup(message: "Não foi possível salvar o token no Keychain")
+                return
+            }
         }
         self.pendingSetup = nil
+        isSwitchingDevice = false
         session += 1
+        resetDeviceData()
         store.deviceId = device.id
         store.deviceAlias = device.alias
         deviceAlias = device.alias
+        client = pendingSetup.client
+        await load()
+    }
+
+    /// "Trocar aparelho…": lista os ar-condicionados pela conexão atual, sem tocar no Keychain
+    /// (cada acesso ao Keychain pode pedir a senha do Mac). Se a lista não vier, continua no aparelho atual.
+    public func chooseAnotherDevice() async {
+        guard let client else {
+            phase = .needsSetup(message: nil)
+            return
+        }
+        let session = self.session
+        do {
+            let airConditioners = try await client.devices().filter(\.isAirConditioner)
+            guard session == self.session else { return }
+            guard !airConditioners.isEmpty else {
+                statusMessage = "Nenhum ar-condicionado encontrado nesta conta"
+                return
+            }
+            // Enquanto a lista está na tela, nada do aparelho atual pode trocar a fase.
+            self.session += 1
+            resetDeviceData()
+            self.client = nil
+            pendingSetup = (client, nil)
+            isSwitchingDevice = true
+            phase = .choosingDevice(airConditioners)
+        } catch {
+            guard session == self.session else { return }
+            handle(error)
+        }
+    }
+
+    /// "Cancelar" na escolha do aparelho: volta ao aparelho atual.
+    public func cancelDeviceChoice() async {
+        guard isSwitchingDevice, let pendingSetup else { return }
+        self.pendingSetup = nil
+        isSwitchingDevice = false
         client = pendingSetup.client
         await load()
     }
@@ -123,6 +169,15 @@ public final class ACController {
     /// Encerra a sessão: apaga o token e descarta tudo que dependia dele (estado, comandos pendentes, polling).
     private func clearSession() {
         session += 1
+        resetDeviceData()
+        store.deleteToken()
+        client = nil
+        pendingSetup = nil
+        isSwitchingDevice = false
+    }
+
+    /// Descarta tudo que pertence ao aparelho atual (estado, comandos pendentes, polling), sem tocar no token.
+    private func resetDeviceData() {
         stopPolling()
         tempTask?.cancel()
         tempTask = nil
@@ -130,8 +185,6 @@ public final class ACController {
         confirmTask = nil
         pendingTargetTemp = nil
         tempBaseline = nil
-        store.deleteToken()
-        client = nil
         capabilities = nil
         state = nil
         lastUpdated = nil

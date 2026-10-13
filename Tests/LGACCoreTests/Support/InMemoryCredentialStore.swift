@@ -2,19 +2,33 @@ import Foundation
 @testable import LGACCore
 
 final class InMemoryCredentialStore: CredentialStoring {
-    var token: String?
     var country = "BR"
     var deviceId: String?
     var deviceAlias: String?
     let clientId = "lgac-test-client"
     var saveError: Error?
+    /// Quantas vezes o token foi lido, salvo ou apagado (no Keychain real, cada acesso pode pedir a senha do Mac).
+    private(set) var keychainAccesses = 0
+    private var storedToken: String?
 
-    func saveToken(_ token: String) throws {
-        if let saveError { throw saveError }
-        self.token = token
+    var token: String? {
+        get {
+            keychainAccesses += 1
+            return storedToken
+        }
+        set { storedToken = newValue }
     }
 
-    func deleteToken() { token = nil }
+    func saveToken(_ token: String) throws {
+        keychainAccesses += 1
+        if let saveError { throw saveError }
+        storedToken = token
+    }
+
+    func deleteToken() {
+        keychainAccesses += 1
+        storedToken = nil
+    }
 
     /// Store de quem já configurou o app.
     static func configured() -> InMemoryCredentialStore {

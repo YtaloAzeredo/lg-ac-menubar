@@ -69,6 +69,12 @@ struct DeviceChoiceView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
+            if controller.isSwitchingDevice {
+                HStack {
+                    Spacer()
+                    Button("Cancelar") { Task { await controller.cancelDeviceChoice() } }
+                }
+            }
         }
         .padding(16)
     }
