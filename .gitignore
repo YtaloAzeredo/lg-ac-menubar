@@ -1,0 +1,14 @@
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# App empacotado
+*.app
+dist/
+
+# Saída do lgac-dump (contém id real do aparelho)
+dump/
+
+# macOS
+.DS_Store
