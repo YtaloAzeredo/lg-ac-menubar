@@ -36,8 +36,8 @@ public struct ACState: Sendable, Equatable {
             jobMode: state["airConJobMode"]?["currentJobMode"]?.stringValue,
             targetTemp: celsius?["targetTemperature"]?.doubleValue ?? legacy?["targetTemperature"]?.doubleValue,
             currentTemp: celsius?["currentTemperature"]?.doubleValue ?? legacy?["currentTemperature"]?.doubleValue,
-            windStrength: state["airFlow"]?["windStrengthDetail"]?.stringValue
-                ?? state["airFlow"]?["windStrength"]?.stringValue,
+            windStrength: state["airFlow"]?["windStrength"]?.stringValue
+                ?? state["airFlow"]?["windStrengthDetail"]?.stringValue,
             swingUpDown: state["windDirection"]?["rotateUpDown"]?.boolValue,
             swingLeftRight: state["windDirection"]?["rotateLeftRight"]?.boolValue,
             displayLightOn: Self.lightIsOn(state["display"]?["light"]),

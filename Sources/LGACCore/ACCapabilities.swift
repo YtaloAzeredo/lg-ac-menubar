@@ -54,12 +54,13 @@ public struct ACCapabilities: Sendable, Equatable {
 
         targetTemp = Self.temperatureControl(in: property)
 
-        if let detail = property["airFlow"]?["windStrengthDetail"], Self.isWritable(detail) {
-            windStrengthKey = "windStrengthDetail"
-            windStrengths = Self.writableEnum(detail)
-        } else {
+        // `windStrength` é o do controle remoto (com Auto); `windStrengthDetail` só quando ele não existe.
+        if let strength = property["airFlow"]?["windStrength"], Self.isWritable(strength) {
             windStrengthKey = "windStrength"
-            windStrengths = Self.writableEnum(property["airFlow"]?["windStrength"])
+            windStrengths = Self.writableEnum(strength)
+        } else {
+            windStrengthKey = "windStrengthDetail"
+            windStrengths = Self.writableEnum(property["airFlow"]?["windStrengthDetail"])
         }
 
         swingUpDown = Self.isWritable(property["windDirection"]?["rotateUpDown"])
