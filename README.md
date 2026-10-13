@@ -98,7 +98,7 @@ Consequência prática: **o Mac precisa estar com internet** para controlar o ar
 ## 2. Compilar e instalar
 
 ```bash
-git clone https://github.com/<seu-usuario>/lg-ac-menubar.git
+git clone https://github.com/YtaloAzeredo/lg-ac-menubar.git
 cd lg-ac-menubar
 ./build-app.sh
 ```
