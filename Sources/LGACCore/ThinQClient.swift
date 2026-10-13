@@ -96,6 +96,9 @@ public struct ThinQClient: ThinQClientProtocol {
         let response: URLResponse
         do {
             (data, response) = try await transport(request)
+        } catch let error as URLError where error.code == .cancelled {
+            // URLSession reporta cancelamento como URLError; para o chamador é um CancellationError.
+            throw CancellationError()
         } catch let error as URLError {
             throw ThinQError.network(error.code)
         }

@@ -36,11 +36,14 @@ extension ACController {
 
     func deliver(_ payload: JSONValue, rollbackTo previous: ACState) async {
         guard let client, let deviceId = store.deviceId else { return }
+        let session = self.session
         do {
             try await client.control(deviceId: deviceId, payload: payload)
+            guard session == self.session else { return }
             statusMessage = nil
             scheduleConfirmation()
         } catch {
+            guard session == self.session else { return }
             if !(error is CancellationError) { state = previous }
             handle(error)
         }

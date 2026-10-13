@@ -106,4 +106,28 @@ import Testing
         #expect(controller.state?.offTimerRemainingMinutes == nil)
         #expect(await fake.controls == [["timer": ["relativeStopTimer": "UNSET"]]])
     }
+
+    @Test func staleRejectionAfterResetIsIgnored() async throws {
+        let fake = try FakeClient.full()
+        let store = InMemoryCredentialStore.configured()
+        let controller = makeController(fake: fake, store: store)
+        await controller.bootstrap()
+        await fake.setControlError(.invalidToken)
+        await fake.holdNextControl()
+
+        let sending = Task { await controller.send(.jobMode("HEAT")) }
+        for _ in 0..<10_000 where !(await fake.isControlHeld) { await Task.yield() }
+        #expect(await fake.isControlHeld)
+
+        controller.resetCredentials()
+        store.token = "novo-token"
+        await fake.releaseControl()
+        await sending.value
+
+        #expect(store.token == "novo-token")
+        #expect(controller.state == nil)
+        #expect(controller.statusMessage == nil)
+        #expect(controller.phase == .needsSetup(message: nil))
+        #expect(controller.confirmTask == nil)
+    }
 }

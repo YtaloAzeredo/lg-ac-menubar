@@ -99,6 +99,11 @@ private func makeClient(status: Int = 200, body: String, log: RequestLog = Reque
         await #expect(throws: ThinQError.network(.notConnectedToInternet)) { try await client.devices() }
     }
 
+    @Test func cancelledTransportBecomesCancellationError() async throws {
+        let client = try ThinQClient(credentials: credentials) { _ in throw URLError(.cancelled) }
+        await #expect(throws: CancellationError.self) { try await client.devices() }
+    }
+
     @Test func unsupportedCountryIsRejected() {
         #expect(throws: ThinQError.unsupportedCountry) {
             try ThinQClient(credentials: ThinQCredentials(token: "t", country: "XX", clientId: "c"))
