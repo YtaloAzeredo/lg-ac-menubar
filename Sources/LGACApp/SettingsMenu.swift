@@ -3,13 +3,16 @@ import LGACCore
 import ServiceManagement
 import SwiftUI
 
-/// Botão ⚙ do rodapé: trocar token, abrir ao iniciar sessão, sair.
+/// Botão ⚙ do rodapé: trocar aparelho, trocar token, abrir ao iniciar sessão, sair.
 struct SettingsMenu: View {
     let controller: ACController
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
 
     var body: some View {
         Menu {
+            if controller.phase == .ready || controller.phase == .loading {
+                Button("Trocar aparelho…") { Task { await controller.chooseAnotherDevice() } }
+            }
             Button("Trocar token…") { controller.resetCredentials() }
             Toggle("Abrir ao iniciar sessão", isOn: $launchAtLogin)
             Divider()

@@ -26,6 +26,8 @@ public final class ACController {
     public internal(set) var statusMessage: String?
     public internal(set) var isDeviceOffline = false
     public internal(set) var pollInterval: Duration = ACController.basePollInterval
+    /// A escolha de aparelho veio de "Trocar aparelho…" (dá para cancelar e voltar ao atual).
+    public internal(set) var isSwitchingDevice = false
 
     @ObservationIgnored let store: any CredentialStoring
     @ObservationIgnored let makeClient: @Sendable (ThinQCredentials) throws -> any ThinQClientProtocol
@@ -106,10 +108,50 @@ public final class ACController {
             return
         }
         self.pendingSetup = nil
+        isSwitchingDevice = false
         session += 1
+        resetDeviceData()
         store.deviceId = device.id
         store.deviceAlias = device.alias
         deviceAlias = device.alias
+        client = pendingSetup.client
+        await load()
+    }
+
+    /// "Trocar aparelho…": lista os ar-condicionados usando o token já salvo.
+    /// Se a lista não vier, continua no aparelho atual e mostra o erro.
+    public func chooseAnotherDevice() async {
+        guard let token = store.token else {
+            phase = .needsSetup(message: nil)
+            return
+        }
+        let session = self.session
+        do {
+            let client = try makeClient(ThinQCredentials(token: token, country: store.country, clientId: store.clientId))
+            let airConditioners = try await client.devices().filter(\.isAirConditioner)
+            guard session == self.session else { return }
+            guard !airConditioners.isEmpty else {
+                statusMessage = "Nenhum ar-condicionado encontrado nesta conta"
+                return
+            }
+            // Enquanto a lista está na tela, nada do aparelho atual pode trocar a fase.
+            self.session += 1
+            resetDeviceData()
+            self.client = nil
+            pendingSetup = (client, token)
+            isSwitchingDevice = true
+            phase = .choosingDevice(airConditioners)
+        } catch {
+            guard session == self.session else { return }
+            handle(error)
+        }
+    }
+
+    /// "Cancelar" na escolha do aparelho: volta ao aparelho atual.
+    public func cancelDeviceChoice() async {
+        guard isSwitchingDevice, let pendingSetup else { return }
+        self.pendingSetup = nil
+        isSwitchingDevice = false
         client = pendingSetup.client
         await load()
     }
@@ -123,6 +165,15 @@ public final class ACController {
     /// Encerra a sessão: apaga o token e descarta tudo que dependia dele (estado, comandos pendentes, polling).
     private func clearSession() {
         session += 1
+        resetDeviceData()
+        store.deleteToken()
+        client = nil
+        pendingSetup = nil
+        isSwitchingDevice = false
+    }
+
+    /// Descarta tudo que pertence ao aparelho atual (estado, comandos pendentes, polling), sem tocar no token.
+    private func resetDeviceData() {
         stopPolling()
         tempTask?.cancel()
         tempTask = nil
@@ -130,8 +181,6 @@ public final class ACController {
         confirmTask = nil
         pendingTargetTemp = nil
         tempBaseline = nil
-        store.deleteToken()
-        client = nil
         capabilities = nil
         state = nil
         lastUpdated = nil
