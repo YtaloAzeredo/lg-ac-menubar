@@ -10,5 +10,9 @@ dist/
 # Saída do lgac-dump (contém id real do aparelho)
 dump/
 
+# Segredos locais (token da LG)
+.env
+.env.*
+
 # macOS
 .DS_Store
