@@ -28,13 +28,16 @@ public final class ACController {
     public internal(set) var pollInterval: Duration = ACController.basePollInterval
     /// A escolha de aparelho veio de "Trocar aparelho…" (dá para cancelar e voltar ao atual).
     public internal(set) var isSwitchingDevice = false
+    /// Há um aparelho conectado para trocar por outro (a troca reaproveita a conexão, sem ler o token).
+    public var canSwitchDevice: Bool { client != nil }
 
     @ObservationIgnored let store: any CredentialStoring
     @ObservationIgnored let makeClient: @Sendable (ThinQCredentials) throws -> any ThinQClientProtocol
     @ObservationIgnored let sleep: @Sendable (Duration) async throws -> Void
     @ObservationIgnored let now: @Sendable () -> Date
     @ObservationIgnored var client: (any ThinQClientProtocol)?
-    @ObservationIgnored var pendingSetup: (client: any ThinQClientProtocol, token: String)?
+    /// Cliente à espera da escolha do aparelho; `token` só existe quando é um token novo, ainda não salvo.
+    @ObservationIgnored var pendingSetup: (client: any ThinQClientProtocol, token: String?)?
     @ObservationIgnored var pollTask: Task<Void, Never>?
     /// Geração da sessão (token + aparelho); um `refresh` em andamento descarta o resultado se ela mudar.
     @ObservationIgnored var session = 0
@@ -101,11 +104,13 @@ public final class ACController {
 
     public func selectDevice(_ device: ThinQDevice) async {
         guard let pendingSetup else { return }
-        do {
-            try store.saveToken(pendingSetup.token)
-        } catch {
-            phase = .needsSetup(message: "Não foi possível salvar o token no Keychain")
-            return
+        if let token = pendingSetup.token {
+            do {
+                try store.saveToken(token)
+            } catch {
+                phase = .needsSetup(message: "Não foi possível salvar o token no Keychain")
+                return
+            }
         }
         self.pendingSetup = nil
         isSwitchingDevice = false
@@ -118,16 +123,15 @@ public final class ACController {
         await load()
     }
 
-    /// "Trocar aparelho…": lista os ar-condicionados usando o token já salvo.
-    /// Se a lista não vier, continua no aparelho atual e mostra o erro.
+    /// "Trocar aparelho…": lista os ar-condicionados pela conexão atual, sem tocar no Keychain
+    /// (cada acesso ao Keychain pode pedir a senha do Mac). Se a lista não vier, continua no aparelho atual.
     public func chooseAnotherDevice() async {
-        guard let token = store.token else {
+        guard let client else {
             phase = .needsSetup(message: nil)
             return
         }
         let session = self.session
         do {
-            let client = try makeClient(ThinQCredentials(token: token, country: store.country, clientId: store.clientId))
             let airConditioners = try await client.devices().filter(\.isAirConditioner)
             guard session == self.session else { return }
             guard !airConditioners.isEmpty else {
@@ -138,7 +142,7 @@ public final class ACController {
             self.session += 1
             resetDeviceData()
             self.client = nil
-            pendingSetup = (client, token)
+            pendingSetup = (client, nil)
             isSwitchingDevice = true
             phase = .choosingDevice(airConditioners)
         } catch {

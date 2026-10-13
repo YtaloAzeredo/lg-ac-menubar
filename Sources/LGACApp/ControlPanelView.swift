@@ -68,6 +68,9 @@ struct ControlPanelView: View {
             .buttonStyle(.plain)
             .disabled(caps?.power != true)
             .help(isOn ? "Desligar" : "Ligar")
+            if controller.canSwitchDevice {
+                SwitchDeviceButton(controller: controller)
+            }
         }
     }
 

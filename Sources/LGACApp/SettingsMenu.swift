@@ -10,7 +10,7 @@ struct SettingsMenu: View {
 
     var body: some View {
         Menu {
-            if controller.phase == .ready || controller.phase == .loading {
+            if controller.canSwitchDevice {
                 Button("Trocar aparelho…") { Task { await controller.chooseAnotherDevice() } }
             }
             Button("Trocar token…") { controller.resetCredentials() }

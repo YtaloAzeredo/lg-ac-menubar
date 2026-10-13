@@ -17,18 +17,43 @@ private let washer = ThinQDevice(id: "w-1", type: "DEVICE_WASHER", alias: "Lavad
         return controller
     }
 
-    @Test func listsAirConditionersWithTheSavedToken() async throws {
+    @Test func listsAirConditionersReusingTheCurrentConnection() async throws {
         let store = InMemoryCredentialStore.configured()
         let log = CredentialsLog()
         let controller = await readyController(try .full(), store: store, log: log)
+        let clientsBefore = log.all.count
 
         await controller.chooseAnotherDevice()
 
         #expect(controller.phase == .choosingDevice([ac1, ac2]))
         #expect(controller.isSwitchingDevice)
-        #expect(log.all.last == ThinQCredentials(token: "tok", country: "BR", clientId: "lgac-test-client"))
+        #expect(!controller.canSwitchDevice)
+        #expect(log.all.count == clientsBefore)
         #expect(store.token == "tok")
         #expect(store.deviceId == "ac-1")
+    }
+
+    @Test func switchingNeverTouchesTheKeychain() async throws {
+        let store = InMemoryCredentialStore.configured()
+        let controller = await readyController(try .full(), store: store)
+        let accessesBefore = store.keychainAccesses
+
+        await controller.chooseAnotherDevice()
+        await controller.cancelDeviceChoice()
+        await controller.chooseAnotherDevice()
+        await controller.selectDevice(ac2)
+
+        #expect(store.keychainAccesses == accessesBefore)
+        #expect(controller.phase == .ready)
+        #expect(store.deviceId == "ac-2")
+    }
+
+    @Test func canSwitchOnlyWithAnOpenConnection() async throws {
+        let fresh = makeController(fake: try .full(), store: .configured())
+        #expect(!fresh.canSwitchDevice)
+
+        let ready = await readyController(try .full())
+        #expect(ready.canSwitchDevice)
     }
 
     @Test func choosingAnotherLoadsTheNewDevice() async throws {
@@ -127,10 +152,8 @@ private let washer = ThinQDevice(id: "w-1", type: "DEVICE_WASHER", alias: "Lavad
         #expect(store.token == nil)
     }
 
-    @Test func unreadableTokenGoesToSetup() async throws {
-        let store = InMemoryCredentialStore.configured()
-        let controller = await readyController(try .full(), store: store)
-        store.token = nil  // ex.: o Keychain negou a leitura
+    @Test func withoutConnectionGoesToSetup() async throws {
+        let controller = makeController(fake: try .full(), store: .configured())
 
         await controller.chooseAnotherDevice()
 
