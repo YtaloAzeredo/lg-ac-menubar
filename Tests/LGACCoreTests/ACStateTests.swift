@@ -17,6 +17,11 @@ import Testing
             swingUpDown: true))
     }
 
+    @Test func prefersWindStrengthOverDetail() {
+        let state = ACState(state: ["airFlow": ["windStrength": "AUTO", "windStrengthDetail": "NATURE"]])
+        #expect(state.windStrength == "AUTO")
+    }
+
     @Test func emptyStateHasNoValues() {
         #expect(ACState(state: [:]) == ACState())
     }

@@ -18,6 +18,28 @@ import Testing
         #expect(caps.displayLight == .onOff)
     }
 
+    /// Modelos com os dois controles: o de `windStrength` é o do controle remoto (com Auto);
+    /// o `windStrengthDetail` traz opções como NATURE e não tem Auto.
+    @Test func prefersWindStrengthWhenBothAreWritable() {
+        let profile: JSONValue = [
+            "property": [
+                "airFlow": [
+                    "windStrength": [
+                        "mode": ["r", "w"], "type": "enum",
+                        "value": ["w": ["LOW", "MID", "HIGH", "AUTO"]],
+                    ],
+                    "windStrengthDetail": [
+                        "mode": ["r", "w"], "type": "enum",
+                        "value": ["w": ["NATURE", "LOW", "MID", "HIGH"]],
+                    ],
+                ]
+            ]
+        ]
+        let caps = ACCapabilities(profile: profile)
+        #expect(caps.windStrengthKey == "windStrength")
+        #expect(caps.windStrengths == ["LOW", "MID", "HIGH", "AUTO"])
+    }
+
     @Test func basicProfile() throws {
         let caps = try Fixture.capabilities("profile-basic")
         #expect(caps.power)
