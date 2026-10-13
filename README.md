@@ -2,8 +2,6 @@
 
 Controle o seu ar-condicionado LG direto da barra de menu do macOS, sem pegar o celular.
 
-> **Status: em desenvolvimento.** O design está definido em [`docs/superpowers/specs/2026-10-13-lg-ac-menubar-design.md`](docs/superpowers/specs/2026-10-13-lg-ac-menubar-design.md). As instruções de build e uso abaixo descrevem como o app vai funcionar quando a implementação estiver pronta.
-
 ```
   🔋  📶  🔊   ❄   seg 12:30
                │
@@ -108,9 +106,9 @@ O script:
 1. compila em modo release (`swift build -c release`);
 2. monta o bundle `LG AC.app` com `Info.plist` (`LSUIElement`, sem ícone no Dock) e ícone;
 3. assina ad-hoc (`codesign --sign -`), suficiente para uso pessoal;
-4. copia para `/Applications`.
+4. copia para `/Applications` e abre o app.
 
-Depois, abra **LG AC** em `/Applications` (ou pelo Spotlight).
+Para só gerar o bundle em `dist/LG AC.app`, sem instalar: `./build-app.sh --no-install`.
 
 > Na primeira execução o macOS pode avisar que o app é de um desenvolvedor não identificado. Abra **Ajustes do Sistema → Privacidade e Segurança** e clique em **Abrir Mesmo Assim**.
 
@@ -189,6 +187,14 @@ Os testes usam **Swift Testing** e **nunca chamam a API real**: o cliente HTTP �
 
 ```bash
 swift run LGACApp
+```
+
+Com `swift run`, a opção "Abrir ao iniciar sessão" não funciona (ela exige o `.app` instalado).
+
+### Regerar o ícone
+
+```bash
+swift scripts/make-icon.swift
 ```
 
 ### `lgac-dump`: inspecionar o seu aparelho
