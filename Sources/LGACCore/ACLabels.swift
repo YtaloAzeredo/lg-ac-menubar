@@ -44,7 +44,7 @@ public enum ACLabels {
     }
 
     /// `23` → "23°", `23.5` → "23,5°" (em pt-BR).
-    public static func temperature(_ value: Double, locale: Locale = .current) -> String {
+    public static func temperature(_ value: Double, locale: Locale = Locale(identifier: "pt_BR")) -> String {
         value.formatted(.number.precision(.fractionLength(0...1)).locale(locale)) + "°"
     }
 

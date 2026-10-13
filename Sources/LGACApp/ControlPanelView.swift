@@ -115,7 +115,7 @@ struct ControlPanelView: View {
                     Button(ACLabels.duration(minutes: minutes)) { send(.offTimer(minutes: minutes)) }
                 }
             } label: {
-                Text(state.offTimerRemainingMinutes.map { "Desliga em \(ACLabels.duration(minutes: $0))" } ?? "Desativado")
+                Text(state.offTimerRemainingMinutes.map { ACLabels.duration(minutes: $0) } ?? "Desativado")
             }
             .fixedSize()
         }

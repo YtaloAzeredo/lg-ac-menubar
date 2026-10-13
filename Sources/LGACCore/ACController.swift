@@ -116,15 +116,28 @@ public final class ACController {
 
     /// "Trocar token…": apaga o token e volta para a configuração.
     public func resetCredentials() {
+        clearSession()
+        phase = .needsSetup(message: nil)
+    }
+
+    /// Encerra a sessão: apaga o token e descarta tudo que dependia dele (estado, comandos pendentes, polling).
+    private func clearSession() {
         session += 1
         stopPolling()
+        tempTask?.cancel()
+        tempTask = nil
+        confirmTask?.cancel()
+        confirmTask = nil
+        pendingTargetTemp = nil
+        tempBaseline = nil
         store.deleteToken()
         client = nil
         capabilities = nil
         state = nil
         lastUpdated = nil
         statusMessage = nil
-        phase = .needsSetup(message: nil)
+        isDeviceOffline = false
+        pollInterval = Self.basePollInterval
     }
 
     /// Carrega profile e estado. Sem rede, fica em `.loading` e o polling tenta de novo.
@@ -190,10 +203,7 @@ public final class ACController {
         }
         switch error {
         case .invalidToken:
-            session += 1
-            stopPolling()
-            store.deleteToken()
-            client = nil
+            clearSession()
             phase = .needsSetup(message: error.userMessage)
         case .rateLimited:
             pollInterval = min(pollInterval * 2, Self.maxPollInterval)

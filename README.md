@@ -114,10 +114,10 @@ Para só gerar o bundle em `dist/LG AC.app`, sem instalar: `./build-app.sh --no-
 
 ## 3. Primeira configuração
 
-1. Clique no ícone ❄ na barra de menu.
+1. Clique no ícone de termômetro esmaecido na barra de menu (quando o ar está ligado, ele passa a mostrar o ícone do modo atual).
 2. Cole o token no campo **Token**.
 3. Escolha o país (padrão: **Brasil**). O país define o servidor da LG usado (Brasil → região AIC).
-4. Clique em **Conectar**. O app encontra o seu ar-condicionado automaticamente e passa a mostrar os controles.
+4. Clique em **Conectar**. O app encontra o seu ar-condicionado automaticamente e passa a mostrar os controles. Se a conta tiver mais de um ar-condicionado, aparece uma lista para você escolher qual controlar.
 
 O token fica guardado no **Keychain** do macOS. Para trocar, use **⚙ → Trocar token…**.
 
@@ -161,6 +161,7 @@ Mudanças feitas pelo controle remoto ou pelo app do celular aparecem em até 5 
 | "Limite de chamadas atingido" | Muitas requisições à API (código `1306`) | Nada — o app espaça as consultas automaticamente (até 30 min) e volta ao normal sozinho |
 | Comando volta ao valor anterior | O aparelho recusou o comando no estado atual (códigos `2205`, `2207`, `2301`–`2305`) | Ex.: alguns modos não aceitam mudar a temperatura ou o ventilador; veja a mensagem no rodapé |
 | "Nenhum ar-condicionado encontrado" | Token sem permissão ou país errado | Confira as permissões do token e o país escolhido |
+| Apareceu o aparelho errado ou offline | A conta tem mais de um ar-condicionado e foi escolhido o outro | **⚙ → Trocar token…** e escolha o outro na lista (o menu ⚙ também aparece na tela de carregamento com erro e na de escolha do aparelho) |
 | Um controle não aparece | O seu modelo não suporta esse recurso | Esperado — o app só mostra o que o profile do aparelho declara |
 | macOS pede acesso ao Keychain depois de reinstalar | A assinatura ad-hoc muda a cada build, e o Keychain trata como outro app | Digite a senha do Mac e clique em **Sempre Permitir** |
 

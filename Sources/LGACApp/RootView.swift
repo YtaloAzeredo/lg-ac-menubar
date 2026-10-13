@@ -19,6 +19,7 @@ struct RootView: View {
             }
         }
         .frame(width: 320)
+        .environment(\.locale, Locale(identifier: "pt_BR"))
         .onAppear { Task { await controller.refresh() } }
     }
 }

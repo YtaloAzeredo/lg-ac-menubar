@@ -29,5 +29,6 @@ import Testing
         let ptBR = Locale(identifier: "pt_BR")
         #expect(ACLabels.temperature(23, locale: ptBR) == "23°")
         #expect(ACLabels.temperature(23.5, locale: ptBR) == "23,5°")
+        #expect(ACLabels.temperature(22.5) == "22,5°")
     }
 }

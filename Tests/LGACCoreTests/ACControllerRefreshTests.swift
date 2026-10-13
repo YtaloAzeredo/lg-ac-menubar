@@ -44,6 +44,22 @@ import Testing
         #expect(store.token == nil)
     }
 
+    @Test func invalidTokenClearsStateAndOfflineFlag() async throws {
+        let fake = try FakeClient.full()
+        let controller = makeController(fake: fake)
+        await controller.bootstrap()
+        await fake.setState(.failure(.deviceOffline))
+        await controller.refresh(force: true)
+        #expect(controller.isDeviceOffline)
+
+        await fake.setState(.failure(.invalidToken))
+        await controller.refresh(force: true)
+
+        #expect(controller.state == nil)
+        #expect(controller.capabilities == nil)
+        #expect(!controller.isDeviceOffline)
+    }
+
     @Test func deviceOfflineFlagClearsOnSuccess() async throws {
         let fake = try FakeClient.full()
         let controller = makeController(fake: fake)

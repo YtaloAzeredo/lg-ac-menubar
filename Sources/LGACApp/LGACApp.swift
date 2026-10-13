@@ -28,7 +28,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         ) { [weak self] _ in
             MainActor.assumeIsolated {
                 guard let controller = self?.controller else { return }
-                Task { await controller.refresh(force: true) }
+                // Espera o Wi-Fi reconectar antes de consultar.
+                Task {
+                    try? await Task.sleep(for: .seconds(5))
+                    await controller.refresh(force: true)
+                }
             }
         }
         Task { await controller.bootstrap() }
