@@ -108,13 +108,15 @@ O script:
 3. assina ad-hoc (`codesign --sign -`), suficiente para uso pessoal;
 4. copia para `/Applications` e abre o app.
 
+O app não abre janela nem aparece no Dock: ele existe só como um ícone na barra de menu, no alto da tela (veja o passo 3).
+
 Para só gerar o bundle em `dist/LG AC.app`, sem instalar: `./build-app.sh --no-install`.
 
 > Na primeira execução o macOS pode avisar que o app é de um desenvolvedor não identificado. Abra **Ajustes do Sistema → Privacidade e Segurança** e clique em **Abrir Mesmo Assim**.
 
 ## 3. Primeira configuração
 
-1. Clique no ícone de termômetro esmaecido na barra de menu (quando o ar está ligado, ele passa a mostrar o ícone do modo atual).
+1. Clique no ícone de termômetro esmaecido na barra de menu (quando o ar está ligado, ele passa a mostrar o ícone do modo atual). Ícones novos entram **à esquerda** dos que já estão na barra. Se não encontrar, veja "O ícone não aparece na barra de menu" em [Solução de problemas](#solução-de-problemas).
 2. Cole o token no campo **Token**.
 3. Escolha o país (padrão: **Brasil**). O país define o servidor da LG usado (Brasil → região AIC).
 4. Clique em **Conectar**. O app encontra o seu ar-condicionado automaticamente e passa a mostrar os controles. Se a conta tiver mais de um ar-condicionado, aparece uma lista para você escolher qual controlar.
@@ -155,6 +157,7 @@ Mudanças feitas pelo controle remoto ou pelo app do celular aparecem em até 5 
 
 | Mensagem / sintoma | Causa provável | O que fazer |
 |---|---|---|
+| O ícone não aparece na barra de menu | A barra está cheia. Em MacBooks com notch, os ícones que não cabem ficam escondidos atrás da câmera. Com mais de um monitor, o ícone pode estar visível só na barra do outro monitor | Segure **⌘** e arraste o ícone para a direita, perto do relógio (os ícones da direita têm prioridade), ou esconda ícones que você não usa em **Ajustes do Sistema → Barra de Menus**. Para conferir se o app está rodando: `pgrep -lx LGACApp` |
 | "Token inválido, gere um novo" | Token revogado, expirado ou colado errado (códigos LG `1103`, `1218`, `1302`) | Gere outro token (passo 1) e use **⚙ → Trocar token…** |
 | "Sem conexão" | Mac sem internet ou API da LG fora do ar | Verifique a internet; o app tenta de novo sozinho |
 | "Ar-condicionado offline" | O aparelho perdeu o Wi-Fi (código `1222`) | Confira se ele aparece online no app ThinQ do celular |
