@@ -1,0 +1,20 @@
+{
+  "airConJobMode": { "currentJobMode": "COOL" },
+  "airFlow": { "windStrength": "MID" },
+  "display": { "light": "ON" },
+  "operation": { "airConOperationMode": "POWER_ON" },
+  "powerSave": { "powerSaveEnabled": false },
+  "sleepTimer": { "relativeStopTimer": "UNSET" },
+  "temperature": { "currentTemperature": 25, "targetTemperature": 23, "unit": "C" },
+  "temperatureInUnits": [
+    { "currentTemperature": 25, "targetTemperature": 23, "unit": "C" },
+    { "currentTemperature": 77, "targetTemperature": 74, "unit": "F" }
+  ],
+  "timer": {
+    "relativeStartTimer": "UNSET",
+    "relativeStopTimer": "SET",
+    "relativeHourToStop": 1,
+    "relativeMinuteToStop": 20
+  },
+  "windDirection": { "rotateUpDown": false, "rotateLeftRight": true }
+}

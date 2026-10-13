@@ -2,8 +2,6 @@
 
 Controle o seu ar-condicionado LG direto da barra de menu do macOS, sem pegar o celular.
 
-> **Status: em desenvolvimento.** O design está definido em [`docs/superpowers/specs/2026-10-13-lg-ac-menubar-design.md`](docs/superpowers/specs/2026-10-13-lg-ac-menubar-design.md). As instruções de build e uso abaixo descrevem como o app vai funcionar quando a implementação estiver pronta.
-
 ```
   🔋  📶  🔊   ❄   seg 12:30
                │
@@ -108,18 +106,20 @@ O script:
 1. compila em modo release (`swift build -c release`);
 2. monta o bundle `LG AC.app` com `Info.plist` (`LSUIElement`, sem ícone no Dock) e ícone;
 3. assina ad-hoc (`codesign --sign -`), suficiente para uso pessoal;
-4. copia para `/Applications`.
+4. copia para `/Applications` e abre o app.
 
-Depois, abra **LG AC** em `/Applications` (ou pelo Spotlight).
+O app não abre janela nem aparece no Dock: ele existe só como um ícone na barra de menu, no alto da tela (veja o passo 3).
+
+Para só gerar o bundle em `dist/LG AC.app`, sem instalar: `./build-app.sh --no-install`.
 
 > Na primeira execução o macOS pode avisar que o app é de um desenvolvedor não identificado. Abra **Ajustes do Sistema → Privacidade e Segurança** e clique em **Abrir Mesmo Assim**.
 
 ## 3. Primeira configuração
 
-1. Clique no ícone ❄ na barra de menu.
+1. Clique no ícone de termômetro esmaecido na barra de menu (quando o ar está ligado, ele passa a mostrar o ícone do modo atual). Ícones novos entram **à esquerda** dos que já estão na barra. Se não encontrar, veja "O ícone não aparece na barra de menu" em [Solução de problemas](#solução-de-problemas).
 2. Cole o token no campo **Token**.
 3. Escolha o país (padrão: **Brasil**). O país define o servidor da LG usado (Brasil → região AIC).
-4. Clique em **Conectar**. O app encontra o seu ar-condicionado automaticamente e passa a mostrar os controles.
+4. Clique em **Conectar**. O app encontra o seu ar-condicionado automaticamente e passa a mostrar os controles. Se a conta tiver mais de um ar-condicionado, aparece uma lista para você escolher qual controlar.
 
 O token fica guardado no **Keychain** do macOS. Para trocar, use **⚙ → Trocar token…**.
 
@@ -157,12 +157,14 @@ Mudanças feitas pelo controle remoto ou pelo app do celular aparecem em até 5 
 
 | Mensagem / sintoma | Causa provável | O que fazer |
 |---|---|---|
+| O ícone não aparece na barra de menu | A barra está cheia. Em MacBooks com notch, os ícones que não cabem ficam escondidos atrás da câmera. Com mais de um monitor, o ícone pode estar visível só na barra do outro monitor | Segure **⌘** e arraste o ícone para a direita, perto do relógio (os ícones da direita têm prioridade), ou esconda ícones que você não usa em **Ajustes do Sistema → Barra de Menus**. Para conferir se o app está rodando: `pgrep -lx LGACApp` |
 | "Token inválido, gere um novo" | Token revogado, expirado ou colado errado (códigos LG `1103`, `1218`, `1302`) | Gere outro token (passo 1) e use **⚙ → Trocar token…** |
 | "Sem conexão" | Mac sem internet ou API da LG fora do ar | Verifique a internet; o app tenta de novo sozinho |
 | "Ar-condicionado offline" | O aparelho perdeu o Wi-Fi (código `1222`) | Confira se ele aparece online no app ThinQ do celular |
 | "Limite de chamadas atingido" | Muitas requisições à API (código `1306`) | Nada — o app espaça as consultas automaticamente (até 30 min) e volta ao normal sozinho |
 | Comando volta ao valor anterior | O aparelho recusou o comando no estado atual (códigos `2205`, `2207`, `2301`–`2305`) | Ex.: alguns modos não aceitam mudar a temperatura ou o ventilador; veja a mensagem no rodapé |
 | "Nenhum ar-condicionado encontrado" | Token sem permissão ou país errado | Confira as permissões do token e o país escolhido |
+| Apareceu o aparelho errado ou offline | A conta tem mais de um ar-condicionado e foi escolhido o outro | **⚙ → Trocar token…** e escolha o outro na lista (o menu ⚙ também aparece na tela de carregamento com erro e na de escolha do aparelho) |
 | Um controle não aparece | O seu modelo não suporta esse recurso | Esperado — o app só mostra o que o profile do aparelho declara |
 | macOS pede acesso ao Keychain depois de reinstalar | A assinatura ad-hoc muda a cada build, e o Keychain trata como outro app | Digite a senha do Mac e clique em **Sempre Permitir** |
 
@@ -189,6 +191,14 @@ Os testes usam **Swift Testing** e **nunca chamam a API real**: o cliente HTTP �
 
 ```bash
 swift run LGACApp
+```
+
+Com `swift run`, a opção "Abrir ao iniciar sessão" não funciona (ela exige o `.app` instalado).
+
+### Regerar o ícone
+
+```bash
+swift scripts/make-icon.swift
 ```
 
 ### `lgac-dump`: inspecionar o seu aparelho
