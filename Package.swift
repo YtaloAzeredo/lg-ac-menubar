@@ -6,6 +6,7 @@ let package = Package(
     platforms: [.macOS(.v14)],
     targets: [
         .target(name: "LGACCore"),
+        .executableTarget(name: "lgac-dump", dependencies: ["LGACCore"]),
         .testTarget(name: "LGACCoreTests", dependencies: ["LGACCore"]),
     ]
 )
