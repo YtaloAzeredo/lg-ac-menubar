@@ -164,23 +164,26 @@ Mudanças feitas pelo controle remoto ou pelo app do celular aparecem em até 5 
 | Comando volta ao valor anterior | O aparelho recusou o comando no estado atual (códigos `2205`, `2207`, `2301`–`2305`) | Ex.: alguns modos não aceitam mudar a temperatura ou o ventilador; veja a mensagem no rodapé |
 | "Nenhum ar-condicionado encontrado" | Token sem permissão ou país errado | Confira as permissões do token e o país escolhido |
 | Um controle não aparece | O seu modelo não suporta esse recurso | Esperado — o app só mostra o que o profile do aparelho declara |
+| macOS pede acesso ao Keychain depois de reinstalar | A assinatura ad-hoc muda a cada build, e o Keychain trata como outro app | Digite a senha do Mac e clique em **Sempre Permitir** |
 
 ## Privacidade e segurança
 
 - O token é salvo **somente no Keychain** do macOS e nunca é escrito em log ou arquivo.
 - O app conversa apenas com `api-*.lgthinq.com` via HTTPS. Nenhum dado é enviado a terceiros.
 - Configurações não sensíveis (id do aparelho, país, client-id) ficam no `UserDefaults`.
-- As fixtures de teste no repositório têm id de aparelho e nome anonimizados.
+- As fixtures de teste no repositório não contêm dados de nenhum aparelho real (ids, nomes e modelos são fictícios ou anonimizados).
 
 ## Desenvolvimento
 
 ### Rodar os testes
 
 ```bash
-swift test
+./scripts/test.sh
 ```
 
-Os testes usam **Swift Testing** (incluído nas Command Line Tools) e **nunca chamam a API real**: o cliente HTTP é testado com stub de rede e o controlador com um cliente falso.
+Os testes usam **Swift Testing** e **nunca chamam a API real**: o cliente HTTP é testado com um transporte stub e o controlador com um cliente falso.
+
+> Com só as Command Line Tools instaladas (sem Xcode), `swift test` puro falha com `no such module 'Testing'`. O `scripts/test.sh` detecta isso e passa os caminhos do framework ao compilador. Com o Xcode instalado, `swift test` funciona direto.
 
 ### Rodar o app sem empacotar
 
@@ -231,9 +234,10 @@ lg-ac-menubar/
 │   └── lgac-dump/
 ├── Tests/LGACCoreTests/
 │   └── Fixtures/
-├── Resources/
+├── Resources/                # Info.plist, AppIcon.icns
+├── scripts/                  # test.sh, make-icon.swift
 ├── build-app.sh
-└── docs/superpowers/specs/   # design detalhado
+└── docs/superpowers/         # design (specs/) e plano de implementação (plans/)
 ```
 
 O design completo, com payloads, formato do profile e tabela de erros, está em [`docs/superpowers/specs/2026-10-13-lg-ac-menubar-design.md`](docs/superpowers/specs/2026-10-13-lg-ac-menubar-design.md).
@@ -254,4 +258,4 @@ O design completo, com payloads, formato do profile e tabela de erros, está em 
 
 ---
 
-Projeto pessoal, sem afiliação com a LG Electronics. "LG" e "ThinQ" são marcas da LG Electronics.
+Projeto independente e **não oficial**, sem afiliação, patrocínio ou endosso da LG Electronics. "LG" e "ThinQ" são marcas da LG Electronics.
