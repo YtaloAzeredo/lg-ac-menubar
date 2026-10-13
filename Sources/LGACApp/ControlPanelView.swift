@@ -46,6 +46,9 @@ struct ControlPanelView: View {
 
     private var header: some View {
         HStack {
+            if controller.canSwitchDevice {
+                SwitchDeviceButton(controller: controller)
+            }
             VStack(alignment: .leading, spacing: 2) {
                 Text(controller.deviceAlias.isEmpty ? "Ar-condicionado" : controller.deviceAlias)
                     .font(.headline)
@@ -68,9 +71,6 @@ struct ControlPanelView: View {
             .buttonStyle(.plain)
             .disabled(caps?.power != true)
             .help(isOn ? "Desligar" : "Ligar")
-            if controller.canSwitchDevice {
-                SwitchDeviceButton(controller: controller)
-            }
         }
     }
 

@@ -1,7 +1,7 @@
 import LGACCore
 import SwiftUI
 
-/// Seta de voltar no canto superior direito: abre a lista de ar-condicionados da conta.
+/// Seta de voltar no canto superior esquerdo: abre a lista de ar-condicionados da conta.
 struct SwitchDeviceButton: View {
     let controller: ACController
 
