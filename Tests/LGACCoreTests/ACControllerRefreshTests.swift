@@ -92,4 +92,22 @@ import Testing
         await controller.refresh()
         #expect(await fake.stateCalls == 2)
     }
+
+    @Test func staleRefreshAfterResetDoesNotRevive() async throws {
+        let fake = try FakeClient.full()
+        let controller = makeController(fake: fake)
+        await controller.bootstrap()
+
+        await fake.holdNextState()
+        let inFlight = Task { @MainActor in await controller.refresh(force: true) }
+        while !(await fake.isStateHeld) { await Task.yield() }
+
+        controller.resetCredentials()
+        await fake.releaseState()
+        await inFlight.value
+
+        #expect(controller.phase == .needsSetup(message: nil))
+        #expect(controller.state == nil)
+        #expect(controller.capabilities == nil)
+    }
 }

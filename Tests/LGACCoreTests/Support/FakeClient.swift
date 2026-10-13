@@ -9,6 +9,9 @@ actor FakeClient: ThinQClientProtocol {
     private var controlError: ThinQError?
     private(set) var controls: [JSONValue] = []
     private(set) var stateCalls = 0
+    private var holdState = false
+    private var stateGate: CheckedContinuation<Void, Never>?
+    private(set) var isStateHeld = false
 
     init(profile: JSONValue, state: JSONValue, devices: [ThinQDevice] = []) {
         devicesResult = .success(devices)
@@ -26,12 +29,25 @@ actor FakeClient: ThinQClientProtocol {
 
     func state(deviceId: String) async throws -> JSONValue {
         stateCalls += 1
+        if holdState {
+            isStateHeld = true
+            await withCheckedContinuation { stateGate = $0 }
+        }
         return try stateResult.get()
     }
 
     func control(deviceId: String, payload: JSONValue) async throws {
         controls.append(payload)
         if let controlError { throw controlError }
+    }
+
+    /// Opt-in: a próxima chamada de `state` fica suspensa até `releaseState()`.
+    func holdNextState() { holdState = true }
+    func releaseState() {
+        holdState = false
+        isStateHeld = false
+        stateGate?.resume()
+        stateGate = nil
     }
 
     func setDevices(_ result: Result<[ThinQDevice], ThinQError>) { devicesResult = result }

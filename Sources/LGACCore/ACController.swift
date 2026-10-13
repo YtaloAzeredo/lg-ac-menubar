@@ -34,6 +34,8 @@ public final class ACController {
     @ObservationIgnored var client: (any ThinQClientProtocol)?
     @ObservationIgnored var pendingSetup: (client: any ThinQClientProtocol, token: String)?
     @ObservationIgnored var pollTask: Task<Void, Never>?
+    /// Geração da sessão (token + aparelho); um `refresh` em andamento descarta o resultado se ela mudar.
+    @ObservationIgnored var session = 0
     // Usados pelos comandos (ACController+Commands.swift).
     @ObservationIgnored var confirmTask: Task<Void, Never>?
     @ObservationIgnored var tempTask: Task<Void, Never>?
@@ -104,6 +106,7 @@ public final class ACController {
             return
         }
         self.pendingSetup = nil
+        session += 1
         store.deviceId = device.id
         store.deviceAlias = device.alias
         deviceAlias = device.alias
@@ -113,6 +116,7 @@ public final class ACController {
 
     /// "Trocar token…": apaga o token e volta para a configuração.
     public func resetCredentials() {
+        session += 1
         stopPolling()
         store.deleteToken()
         client = nil
@@ -137,12 +141,16 @@ public final class ACController {
     /// Busca o estado. Sem `force`, ignora se a última leitura tem menos de 5 s.
     public func refresh(force: Bool = false) async {
         guard let client, let deviceId = store.deviceId else { return }
+        let session = self.session
         if !force, let lastUpdated, now().timeIntervalSince(lastUpdated) < Self.freshness { return }
         do {
             if capabilities == nil {
-                capabilities = ACCapabilities(profile: try await client.profile(deviceId: deviceId))
+                let profile = try await client.profile(deviceId: deviceId)
+                guard session == self.session else { return }
+                capabilities = ACCapabilities(profile: profile)
             }
             var fresh = ACState(state: try await client.state(deviceId: deviceId))
+            guard session == self.session else { return }
             // Um −/+ ainda não enviado vence o valor antigo do servidor.
             if let pendingTargetTemp { fresh.targetTemp = pendingTargetTemp }
             state = fresh
@@ -152,6 +160,7 @@ public final class ACController {
             pollInterval = Self.basePollInterval
             phase = .ready
         } catch {
+            guard session == self.session else { return }
             handle(error)
         }
     }
@@ -181,6 +190,7 @@ public final class ACController {
         }
         switch error {
         case .invalidToken:
+            session += 1
             stopPolling()
             store.deleteToken()
             client = nil
