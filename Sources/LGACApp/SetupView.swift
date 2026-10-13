@@ -9,9 +9,12 @@ struct SetupView: View {
     @State private var token = ""
     @State private var country = "BR"
 
-    private static let countries: [(code: String, name: String)] = ThinQRegion.supportedCountries
-        .map { (code: $0, name: Locale.current.localizedString(forRegionCode: $0) ?? $0) }
-        .sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
+    private static let countries: [(code: String, name: String)] = {
+        let ptBR = Locale(identifier: "pt_BR")
+        return ThinQRegion.supportedCountries
+            .map { (code: $0, name: ptBR.localizedString(forRegionCode: $0) ?? $0) }
+            .sorted { $0.name.compare($1.name, locale: ptBR) == .orderedAscending }
+    }()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -50,7 +53,11 @@ struct DeviceChoiceView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Escolha o ar-condicionado").font(.headline)
+            HStack {
+                Text("Escolha o ar-condicionado").font(.headline)
+                Spacer()
+                SettingsMenu(controller: controller)
+            }
             ForEach(devices) { device in
                 Button {
                     Task { await controller.selectDevice(device) }

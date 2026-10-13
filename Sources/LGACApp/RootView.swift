@@ -15,7 +15,7 @@ struct RootView: View {
             case .loading:
                 LoadingView(controller: controller)
             case .ready:
-                Text("Conectado: \(controller.deviceAlias)").padding()  // trocado na Task 12
+                ControlPanelView(controller: controller)
             }
         }
         .frame(width: 320)
@@ -31,7 +31,10 @@ struct LoadingView: View {
             ProgressView().controlSize(.small)
             if let message = controller.statusMessage {
                 Text(message).font(.caption).foregroundStyle(.secondary)
-                Button("Tentar de novo") { Task { await controller.refresh(force: true) } }
+                HStack(spacing: 10) {
+                    Button("Tentar de novo") { Task { await controller.refresh(force: true) } }
+                    SettingsMenu(controller: controller)
+                }
             }
         }
         .frame(maxWidth: .infinity)
