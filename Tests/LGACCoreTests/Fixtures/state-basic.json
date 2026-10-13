@@ -1,0 +1,7 @@
+{
+  "airConJobMode": { "currentJobMode": "FAN" },
+  "airFlow": { "windStrengthDetail": "HIGH" },
+  "operation": { "airConOperationMode": "POWER_OFF" },
+  "temperatureInUnits": [ { "currentTemperature": 27.5, "targetTemperature": 22.5, "unit": "C" } ],
+  "windDirection": { "rotateUpDown": true }
+}
