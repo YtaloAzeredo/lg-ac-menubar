@@ -106,7 +106,7 @@ O script:
 1. compila em modo release (`swift build -c release`);
 2. monta o bundle `LG AC.app` com `Info.plist` (`LSUIElement`, sem ícone no Dock) e ícone;
 3. assina ad-hoc (`codesign --sign -`), suficiente para uso pessoal;
-4. copia para `/Applications` e abre o app.
+4. move para `/Applications` (não sobra cópia em `dist/`) e abre o app.
 
 O app não abre janela nem aparece no Dock: ele existe só como um ícone na barra de menu, no alto da tela (veja o passo 3).
 

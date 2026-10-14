@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Compila, monta "LG AC.app", assina ad-hoc e instala em /Applications.
-# Uso: ./build-app.sh            (compila e instala)
+# Uso: ./build-app.sh            (compila e move para /Applications; não sobra cópia em dist/)
 #      ./build-app.sh --no-install  (só gera dist/LG AC.app)
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -26,6 +26,9 @@ fi
 # Fecha a versão antiga, se estiver aberta, antes de substituir.
 pkill -x LGACApp 2>/dev/null || true
 rm -rf "/Applications/LG AC.app"
-cp -R "$app" "/Applications/LG AC.app"
+# Move em vez de copiar: uma cópia em dist/ apareceria no Spotlight/Launchpad
+# com o mesmo bundle id e poderia ser aberta (ou registrada no login) por engano.
+mv "$app" "/Applications/LG AC.app"
+rmdir dist 2>/dev/null || true
 echo "✓ Instalado em /Applications/LG AC.app"
 open "/Applications/LG AC.app"
