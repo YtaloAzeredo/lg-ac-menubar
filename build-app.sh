@@ -16,8 +16,12 @@ cp "$bin_dir/LGACApp" "$app/Contents/MacOS/LGACApp"
 cp Resources/Info.plist "$app/Contents/Info.plist"
 cp Resources/AppIcon.icns "$app/Contents/Resources/AppIcon.icns"
 
-codesign --force --sign - "$app"
-echo "✓ $app"
+# Com o certificado local (scripts/make-signing-cert.sh) a assinatura é a mesma a cada build e o
+# Keychain reconhece o app depois de reinstalar. Sem ele, ad-hoc: o Keychain pede a senha de novo.
+identity="LG AC Dev"
+security find-identity -p codesigning | grep -F "\"$identity\"" >/dev/null || identity="-"
+codesign --force --sign "$identity" "$app"
+echo "✓ $app (assinatura: $([[ "$identity" == "-" ]] && echo ad-hoc || echo "$identity"))"
 
 if [[ "${1:-}" == "--no-install" ]]; then
   exit 0

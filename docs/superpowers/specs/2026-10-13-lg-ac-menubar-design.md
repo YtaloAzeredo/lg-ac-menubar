@@ -222,7 +222,7 @@ Regras:
 | Situação | Comportamento |
 |---|---|
 | Sem internet / timeout (`URLError`) | Rodapé "Sem conexão". Mantém o último estado; tenta de novo no próximo ciclo. |
-| Token inválido (`1103`, `1218`, `1302` ou HTTP 401) | Apaga o token; `phase = .needsSetup` com mensagem "Token inválido, gere um novo". |
+| Token inválido (`1103`, `1218`, `1302` ou HTTP 401) | Encerra a sessão, mas mantém o token no Keychain (um 401 passageiro se resolve ao reabrir o app; um token novo o substitui); `phase = .needsSetup` com mensagem "Token inválido, gere um novo". Só "Trocar token…" apaga o token. |
 | Limite de chamadas (`1306`) | Rodapé com aviso. Intervalo de polling dobra a cada ocorrência (5 → 10 → 20 → 30 min, teto 30). Volta a 5 min no primeiro sucesso. |
 | Aparelho offline (`1222`) | Rodapé "Ar-condicionado offline". Ícone esmaecido. |
 | Comando recusado (`1102`, `2205`, `2207`, `2208`, `2301`–`2305`) | Rollback do estado otimista + mensagem da LG no rodapé. |

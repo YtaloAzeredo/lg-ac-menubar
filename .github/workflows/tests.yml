@@ -1,0 +1,23 @@
+name: Testes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - name: Versão do Swift
+        run: swift --version
+      - name: Testes
+        run: ./scripts/test.sh
+      - name: Empacotar o app (sem instalar)
+        run: ./build-app.sh --no-install

@@ -97,7 +97,8 @@ func makeController(
     fake: FakeClient,
     store: InMemoryCredentialStore = .configured(),
     clock: TestNow = TestNow(),
-    log: CredentialsLog = CredentialsLog()
+    log: CredentialsLog = CredentialsLog(),
+    sleep: @escaping @Sendable (Duration) async throws -> Void = testSleep
 ) -> ACController {
     ACController(
         store: store,
@@ -105,6 +106,6 @@ func makeController(
             log.all.append(credentials)
             return fake
         },
-        sleep: testSleep,
+        sleep: sleep,
         now: { clock.date })
 }

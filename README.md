@@ -105,12 +105,21 @@ O script:
 
 1. compila em modo release (`swift build -c release`);
 2. monta o bundle `LG AC.app` com `Info.plist` (`LSUIElement`, sem ícone no Dock) e ícone;
-3. assina ad-hoc (`codesign --sign -`), suficiente para uso pessoal;
+3. assina com o certificado local `LG AC Dev`, se ele existir (veja abaixo), ou ad-hoc (`codesign --sign -`);
 4. move para `/Applications` (não sobra cópia em `dist/`) e abre o app.
 
 O app não abre janela nem aparece no Dock: ele existe só como um ícone na barra de menu, no alto da tela (veja o passo 3).
 
 Para só gerar o bundle em `dist/LG AC.app`, sem instalar: `./build-app.sh --no-install`.
+
+**Recomendado se você recompila com frequência:** crie uma vez o certificado local de assinatura.
+
+```bash
+./scripts/make-signing-cert.sh   # pede a senha do Mac uma vez
+./build-app.sh
+```
+
+Com a assinatura ad-hoc, cada build parece um app diferente para o Keychain, que volta a pedir a senha do Mac depois de cada reinstalação. Assinado sempre com o mesmo certificado, o app é reconhecido entre builds. Depois de criar o certificado, o Keychain ainda pergunta uma última vez (clique em **Sempre Permitir**). O certificado é autoassinado e só vale neste Mac. Para removê-lo: `security delete-identity -c "LG AC Dev"`.
 
 > Na primeira execução o macOS pode avisar que o app é de um desenvolvedor não identificado. Abra **Ajustes do Sistema → Privacidade e Segurança** e clique em **Abrir Mesmo Assim**.
 
@@ -159,7 +168,7 @@ Mudanças feitas pelo controle remoto ou pelo app do celular aparecem em até 5 
 | Mensagem / sintoma | Causa provável | O que fazer |
 |---|---|---|
 | O ícone não aparece na barra de menu | A barra está cheia. Em MacBooks com notch, os ícones que não cabem ficam escondidos atrás da câmera. Com mais de um monitor, o ícone pode estar visível só na barra do outro monitor | Segure **⌘** e arraste o ícone para a direita, perto do relógio (os ícones da direita têm prioridade), ou esconda ícones que você não usa em **Ajustes do Sistema → Barra de Menus**. Para conferir se o app está rodando: `pgrep -lx LGACApp` |
-| "Token inválido, gere um novo" | Token revogado, expirado ou colado errado (códigos LG `1103`, `1218`, `1302`) | Gere outro token (passo 1) e use **⚙ → Trocar token…** |
+| "Token inválido, gere um novo" | Token revogado, expirado ou colado errado (códigos LG `1103`, `1218`, `1302`), ou falha passageira da LG | Gere outro token (passo 1) e cole na tela de configuração, que já aparece no painel. O token antigo continua guardado até você colar o novo: se foi só uma falha da LG, basta sair e abrir o app de novo |
 | "Sem conexão" | Mac sem internet ou API da LG fora do ar | Verifique a internet; o app tenta de novo sozinho |
 | "Ar-condicionado offline" | O aparelho perdeu o Wi-Fi (código `1222`) | Confira se ele aparece online no app ThinQ do celular |
 | "Limite de chamadas atingido" | Muitas requisições à API (código `1306`) | Nada — o app espaça as consultas automaticamente (até 30 min) e volta ao normal sozinho |
@@ -167,7 +176,7 @@ Mudanças feitas pelo controle remoto ou pelo app do celular aparecem em até 5 
 | "Nenhum ar-condicionado encontrado" | Token sem permissão ou país errado | Confira as permissões do token e o país escolhido |
 | Apareceu o aparelho errado ou offline | A conta tem mais de um ar-condicionado e foi escolhido o outro | Seta **‹** no canto superior esquerdo (também na tela de carregamento) e escolha o outro na lista |
 | Um controle não aparece | O seu modelo não suporta esse recurso | Esperado — o app só mostra o que o profile do aparelho declara |
-| macOS pede acesso ao Keychain depois de reinstalar | A assinatura ad-hoc muda a cada build, e o Keychain trata como outro app | Digite a senha do Mac e clique em **Sempre Permitir** |
+| macOS pede acesso ao Keychain depois de reinstalar | A assinatura ad-hoc muda a cada build, e o Keychain trata como outro app | Digite a senha do Mac e clique em **Sempre Permitir**. Para não acontecer de novo, rode uma vez `./scripts/make-signing-cert.sh` (veja [Compilar e instalar](#2-compilar-e-instalar)) |
 
 ## Privacidade e segurança
 
@@ -185,6 +194,8 @@ Mudanças feitas pelo controle remoto ou pelo app do celular aparecem em até 5 
 ```
 
 Os testes usam **Swift Testing** e **nunca chamam a API real**: o cliente HTTP é testado com um transporte stub e o controlador com um cliente falso.
+
+A cada push na `main` e a cada pull request, o GitHub Actions roda os testes e empacota o app (`.github/workflows/tests.yml`).
 
 > Com só as Command Line Tools instaladas (sem Xcode), `swift test` puro falha com `no such module 'Testing'`. O `scripts/test.sh` detecta isso e passa os caminhos do framework ao compilador. Com o Xcode instalado, `swift test` funciona direto.
 
@@ -246,7 +257,8 @@ lg-ac-menubar/
 ├── Tests/LGACCoreTests/
 │   └── Fixtures/
 ├── Resources/                # Info.plist, AppIcon.icns
-├── scripts/                  # test.sh, make-icon.swift
+├── .github/workflows/        # CI: testes e empacotamento
+├── scripts/                  # test.sh, make-icon.swift, make-signing-cert.sh
 ├── build-app.sh
 └── docs/superpowers/         # design (specs/) e plano de implementação (plans/)
 ```

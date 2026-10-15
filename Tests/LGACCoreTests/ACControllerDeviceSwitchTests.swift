@@ -140,7 +140,7 @@ private let washer = ThinQDevice(id: "w-1", type: "DEVICE_WASHER", alias: "Lavad
         #expect(controller.statusMessage == "Nenhum ar-condicionado encontrado nesta conta")
     }
 
-    @Test func invalidTokenGoesToSetup() async throws {
+    @Test func invalidTokenGoesToSetupKeepingTheToken() async throws {
         let fake = try FakeClient.full()
         let store = InMemoryCredentialStore.configured()
         let controller = await readyController(fake, store: store)
@@ -149,7 +149,7 @@ private let washer = ThinQDevice(id: "w-1", type: "DEVICE_WASHER", alias: "Lavad
         await controller.chooseAnotherDevice()
 
         #expect(controller.phase == .needsSetup(message: "Token inválido, gere um novo"))
-        #expect(store.token == nil)
+        #expect(store.token == "tok")
     }
 
     @Test func withoutConnectionGoesToSetup() async throws {

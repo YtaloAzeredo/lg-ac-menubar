@@ -31,7 +31,7 @@ import Testing
         #expect(controller.statusMessage == nil)
     }
 
-    @Test func invalidTokenDuringRefreshReturnsToSetup() async throws {
+    @Test func invalidTokenDuringRefreshReturnsToSetupKeepingTheToken() async throws {
         let fake = try FakeClient.full()
         let store = InMemoryCredentialStore.configured()
         let controller = makeController(fake: fake, store: store)
@@ -41,7 +41,24 @@ import Testing
         await controller.refresh(force: true)
 
         #expect(controller.phase == .needsSetup(message: "Token inválido, gere um novo"))
-        #expect(store.token == nil)
+        #expect(store.token == "tok")
+    }
+
+    /// Um 401 passageiro da LG não obriga a colar o token de novo: ao abrir o app outra vez, ele volta a valer.
+    @Test func transientInvalidTokenRecoversOnNextLaunch() async throws {
+        let fake = try FakeClient.full()
+        let store = InMemoryCredentialStore.configured()
+        let controller = makeController(fake: fake, store: store)
+        await controller.bootstrap()
+        await fake.setState(.failure(.invalidToken))
+        await controller.refresh(force: true)
+
+        await fake.setState(.success(try Fixture.json("state-full")))
+        let relaunched = makeController(fake: fake, store: store)
+        await relaunched.bootstrap()
+
+        #expect(relaunched.phase == .ready)
+        #expect(relaunched.state?.targetTemp == 23)
     }
 
     @Test func invalidTokenClearsStateAndOfflineFlag() async throws {

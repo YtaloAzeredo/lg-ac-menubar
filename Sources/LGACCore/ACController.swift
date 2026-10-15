@@ -162,15 +162,16 @@ public final class ACController {
 
     /// "Trocar token…": apaga o token e volta para a configuração.
     public func resetCredentials() {
-        clearSession()
+        endSession()
+        store.deleteToken()
         phase = .needsSetup(message: nil)
     }
 
-    /// Encerra a sessão: apaga o token e descarta tudo que dependia dele (estado, comandos pendentes, polling).
-    private func clearSession() {
+    /// Encerra a sessão: descarta tudo que dependia da conexão (estado, comandos pendentes, polling).
+    /// Não apaga o token; só "Trocar token…" faz isso.
+    private func endSession() {
         session += 1
         resetDeviceData()
-        store.deleteToken()
         client = nil
         pendingSetup = nil
         isSwitchingDevice = false
@@ -256,7 +257,9 @@ public final class ACController {
         }
         switch error {
         case .invalidToken:
-            clearSession()
+            // O token fica no Keychain: se o 401 for passageiro, ele volta a valer ao abrir o app de novo;
+            // se não, é substituído quando o usuário colar outro.
+            endSession()
             phase = .needsSetup(message: error.userMessage)
         case .rateLimited:
             pollInterval = min(pollInterval * 2, Self.maxPollInterval)
