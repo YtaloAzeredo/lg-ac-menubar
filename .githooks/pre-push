@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Roda os testes antes de cada push; se algum falhar, o push é cancelado.
+# Ativar (uma vez por clone): git config core.hooksPath .githooks
+# Pular numa emergência:      git push --no-verify
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+# Os testes rodam na pasta de trabalho, então mudanças não commitadas entram no resultado.
+if ! git diff --quiet HEAD; then
+  echo "pre-push: atenção, há mudanças não commitadas; os testes incluem essas mudanças." >&2
+fi
+
+echo "pre-push: rodando os testes…" >&2
+log="$(mktemp)"
+trap 'rm -f "$log"' EXIT
+if ./scripts/test.sh >"$log" 2>&1; then
+  grep -E "Test run with" "$log" >&2 || true
+  exit 0
+fi
+
+grep -E "✘|error:" "$log" >&2 || tail -n 30 "$log" >&2
+echo "✘ Push cancelado: os testes falharam. Corrija ou, numa emergência, use git push --no-verify." >&2
+exit 1

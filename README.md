@@ -197,6 +197,14 @@ Os testes usam **Swift Testing** e **nunca chamam a API real**: o cliente HTTP �
 
 A cada push na `main` e a cada pull request, o GitHub Actions roda os testes e empacota o app (`.github/workflows/tests.yml`).
 
+Para os testes rodarem também **antes de cada push**, ative o hook do repositório (uma vez por clone):
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Se algum teste falhar, o push é cancelado e os testes com erro aparecem no terminal. Numa emergência, `git push --no-verify` pula o hook.
+
 > Com só as Command Line Tools instaladas (sem Xcode), `swift test` puro falha com `no such module 'Testing'`. O `scripts/test.sh` detecta isso e passa os caminhos do framework ao compilador. Com o Xcode instalado, `swift test` funciona direto.
 
 ### Rodar o app sem empacotar
@@ -258,6 +266,7 @@ lg-ac-menubar/
 │   └── Fixtures/
 ├── Resources/                # Info.plist, AppIcon.icns
 ├── .github/workflows/        # CI: testes e empacotamento
+├── .githooks/                # pre-push: roda os testes antes do push
 ├── scripts/                  # test.sh, make-icon.swift, make-signing-cert.sh
 ├── build-app.sh
 └── docs/superpowers/         # design (specs/) e plano de implementação (plans/)
