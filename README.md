@@ -268,11 +268,8 @@ lg-ac-menubar/
 ├── .github/workflows/        # CI: testes e empacotamento
 ├── .githooks/                # pre-push: roda os testes antes do push
 ├── scripts/                  # test.sh, make-icon.swift, make-signing-cert.sh
-├── build-app.sh
-└── docs/superpowers/         # design (specs/) e plano de implementação (plans/)
+└── build-app.sh
 ```
-
-O design completo, com payloads, formato do profile e tabela de erros, está em [`docs/superpowers/specs/2026-10-13-lg-ac-menubar-design.md`](docs/superpowers/specs/2026-10-13-lg-ac-menubar-design.md).
 
 ## Fora do escopo
 

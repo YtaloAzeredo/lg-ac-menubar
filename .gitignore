@@ -16,3 +16,7 @@ dump/
 
 # macOS
 .DS_Store
+
+# Designs e planos de implementação (locais, fora do git)
+docs/
+tasks/
