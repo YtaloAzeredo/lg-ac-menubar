@@ -18,6 +18,6 @@ jobs:
       - name: Versão do Swift
         run: swift --version
       - name: Testes
-        run: ./scripts/test.sh
+        run: ./macos/scripts/test.sh
       - name: Empacotar o app (sem instalar)
-        run: ./build-app.sh --no-install
+        run: ./macos/build-app.sh --no-install

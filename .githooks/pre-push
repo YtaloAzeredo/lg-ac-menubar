@@ -13,7 +13,7 @@ fi
 echo "pre-push: rodando os testes…" >&2
 log="$(mktemp)"
 trap 'rm -f "$log"' EXIT
-if ./scripts/test.sh >"$log" 2>&1; then
+if ./macos/scripts/test.sh >"$log" 2>&1; then
   grep -E "Test run with" "$log" >&2 || true
   exit 0
 fi

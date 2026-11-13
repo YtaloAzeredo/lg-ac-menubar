@@ -98,7 +98,7 @@ Consequência prática: **o Mac precisa estar com internet** para controlar o ar
 ```bash
 git clone https://github.com/YtaloAzeredo/lg-ac-menubar.git
 cd lg-ac-menubar
-./build-app.sh
+./macos/build-app.sh
 ```
 
 O script:
@@ -110,13 +110,13 @@ O script:
 
 O app não abre janela nem aparece no Dock: ele existe só como um ícone na barra de menu, no alto da tela (veja o passo 3).
 
-Para só gerar o bundle em `dist/LG AC.app`, sem instalar: `./build-app.sh --no-install`.
+Para só gerar o bundle em `dist/LG AC.app`, sem instalar: `./macos/build-app.sh --no-install`.
 
 **Recomendado se você recompila com frequência:** crie uma vez o certificado local de assinatura.
 
 ```bash
-./scripts/make-signing-cert.sh   # pede a senha do Mac uma vez
-./build-app.sh
+./macos/scripts/make-signing-cert.sh   # pede a senha do Mac uma vez
+./macos/build-app.sh
 ```
 
 Com a assinatura ad-hoc, cada build parece um app diferente para o Keychain, que volta a pedir a senha do Mac depois de cada reinstalação. Assinado sempre com o mesmo certificado, o app é reconhecido entre builds. Depois de criar o certificado, o Keychain ainda pergunta uma última vez (clique em **Sempre Permitir**). O certificado é autoassinado e só vale neste Mac. Para removê-lo: `security delete-identity -c "LG AC Dev"`.
@@ -176,7 +176,7 @@ Mudanças feitas pelo controle remoto ou pelo app do celular aparecem em até 5 
 | "Nenhum ar-condicionado encontrado" | Token sem permissão ou país errado | Confira as permissões do token e o país escolhido |
 | Apareceu o aparelho errado ou offline | A conta tem mais de um ar-condicionado e foi escolhido o outro | Seta **‹** no canto superior esquerdo (também na tela de carregamento) e escolha o outro na lista |
 | Um controle não aparece | O seu modelo não suporta esse recurso | Esperado — o app só mostra o que o profile do aparelho declara |
-| macOS pede acesso ao Keychain depois de reinstalar | A assinatura ad-hoc muda a cada build, e o Keychain trata como outro app | Digite a senha do Mac e clique em **Sempre Permitir**. Para não acontecer de novo, rode uma vez `./scripts/make-signing-cert.sh` (veja [Compilar e instalar](#2-compilar-e-instalar)) |
+| macOS pede acesso ao Keychain depois de reinstalar | A assinatura ad-hoc muda a cada build, e o Keychain trata como outro app | Digite a senha do Mac e clique em **Sempre Permitir**. Para não acontecer de novo, rode uma vez `./macos/scripts/make-signing-cert.sh` (veja [Compilar e instalar](#2-compilar-e-instalar)) |
 
 ## Privacidade e segurança
 
@@ -187,10 +187,12 @@ Mudanças feitas pelo controle remoto ou pelo app do celular aparecem em até 5 
 
 ## Desenvolvimento
 
+O código do app fica na pasta `macos/`. Os comandos `swift` abaixo devem ser rodados dentro dela; os scripts funcionam a partir de qualquer pasta.
+
 ### Rodar os testes
 
 ```bash
-./scripts/test.sh
+./macos/scripts/test.sh
 ```
 
 Os testes usam **Swift Testing** e **nunca chamam a API real**: o cliente HTTP é testado com um transporte stub e o controlador com um cliente falso.
@@ -205,11 +207,12 @@ git config core.hooksPath .githooks
 
 Se algum teste falhar, o push é cancelado e os testes com erro aparecem no terminal. Numa emergência, `git push --no-verify` pula o hook.
 
-> Com só as Command Line Tools instaladas (sem Xcode), `swift test` puro falha com `no such module 'Testing'`. O `scripts/test.sh` detecta isso e passa os caminhos do framework ao compilador. Com o Xcode instalado, `swift test` funciona direto.
+> Com só as Command Line Tools instaladas (sem Xcode), `swift test` puro falha com `no such module 'Testing'`. O `macos/scripts/test.sh` detecta isso e passa os caminhos do framework ao compilador. Com o Xcode instalado, `swift test` funciona direto.
 
 ### Rodar o app sem empacotar
 
 ```bash
+cd macos
 swift run LGACApp
 ```
 
@@ -218,6 +221,7 @@ Com `swift run`, a opção "Abrir ao iniciar sessão" não funciona (ela exige o
 ### Regerar o ícone
 
 ```bash
+cd macos
 swift scripts/make-icon.swift
 ```
 
@@ -229,6 +233,7 @@ Ferramenta de desenvolvimento que salva em JSON a lista de aparelhos, o profile 
 # lê o token sem ecoar na tela e sem deixar no histórico do shell
 read -s "LGAC_TOKEN?Token LG: " && export LGAC_TOKEN
 export LGAC_COUNTRY=BR
+cd macos
 swift run lgac-dump ./dump
 ls ./dump   # devices.json  profile.json  state.json
 ```
@@ -237,7 +242,7 @@ ls ./dump   # devices.json  profile.json  state.json
 
 ## Arquitetura
 
-Pacote Swift sem dependências externas, dividido em três alvos:
+O repositório é organizado por sistema operacional: cada sistema tem a própria pasta, com código, testes e scripts. Hoje existe a `macos/`, um pacote Swift sem dependências externas, dividido em três alvos:
 
 | Alvo | Tipo | Responsabilidade |
 |---|---|---|
@@ -257,18 +262,19 @@ Principais componentes de `LGACCore`:
 
 ```
 lg-ac-menubar/
-├── Package.swift
-├── Sources/
-│   ├── LGACCore/
-│   ├── LGACApp/
-│   └── lgac-dump/
-├── Tests/LGACCoreTests/
-│   └── Fixtures/
-├── Resources/                # Info.plist, AppIcon.icns
+├── macos/
+│   ├── Package.swift
+│   ├── Sources/
+│   │   ├── LGACCore/
+│   │   ├── LGACApp/
+│   │   └── lgac-dump/
+│   ├── Tests/LGACCoreTests/
+│   │   └── Fixtures/
+│   ├── Resources/            # Info.plist, AppIcon.icns
+│   ├── scripts/              # test.sh, make-icon.swift, make-signing-cert.sh
+│   └── build-app.sh
 ├── .github/workflows/        # CI: testes e empacotamento
-├── .githooks/                # pre-push: roda os testes antes do push
-├── scripts/                  # test.sh, make-icon.swift, make-signing-cert.sh
-└── build-app.sh
+└── .githooks/                # pre-push: roda os testes antes do push
 ```
 
 ## Fora do escopo
