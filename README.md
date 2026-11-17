@@ -269,10 +269,11 @@ lg-ac-menubar/
 │   │   ├── LGACApp/
 │   │   └── lgac-dump/
 │   ├── Tests/LGACCoreTests/
-│   │   └── Fixtures/
 │   ├── Resources/            # Info.plist, AppIcon.icns
 │   ├── scripts/              # test.sh, make-icon.swift, make-signing-cert.sh
 │   └── build-app.sh
+├── shared/
+│   └── fixtures/             # JSONs de exemplo usados nos testes
 ├── .github/workflows/        # CI: testes e empacotamento
 └── .githooks/                # pre-push: roda os testes antes do push
 ```
