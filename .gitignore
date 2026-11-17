@@ -20,3 +20,9 @@ dump/
 # Designs e planos de implementação (locais, fora do git)
 docs/
 tasks/
+
+# .NET (app de Windows)
+bin/
+obj/
+windows/dist/
+*.user
