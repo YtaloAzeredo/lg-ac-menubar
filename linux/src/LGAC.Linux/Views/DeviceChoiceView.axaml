@@ -1,0 +1,23 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="LGAC.Linux.Views.DeviceChoiceView">
+    <StackPanel Margin="16">
+        <Grid Margin="0,0,0,8" ColumnDefinitions="*,Auto">
+            <TextBlock VerticalAlignment="Center" Classes="headline" Text="Escolha o ar-condicionado" />
+            <Button x:Name="SettingsButton"
+                    Grid.Column="1"
+                    Classes="icon"
+                    AutomationProperties.Name="Configurações"
+                    Click="OnSettingsClick">
+                <PathIcon Data="{StaticResource Icon.Settings}" />
+            </Button>
+        </Grid>
+        <StackPanel x:Name="DeviceList" Margin="0,0,0,-8" />
+        <Button x:Name="CancelButton"
+                Margin="0,8,0,0"
+                HorizontalAlignment="Right"
+                Click="OnCancelClick"
+                Content="Cancelar"
+                IsVisible="False" />
+    </StackPanel>
+</UserControl>

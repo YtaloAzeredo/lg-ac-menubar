@@ -1,6 +1,6 @@
 # LG AC
 
-Controle o seu ar-condicionado LG direto da barra de menu do macOS ou da bandeja do Windows, sem pegar o celular.
+Controle o seu ar-condicionado LG direto da barra de menu do macOS, da bandeja do Windows ou da bandeja do Linux, sem pegar o celular.
 
 ```
   🔋  📶  🔊   ❄   seg 12:30
@@ -26,7 +26,7 @@ Controle o seu ar-condicionado LG direto da barra de menu do macOS ou da bandeja
 └────────────────────────────────────┘
 ```
 
-O desenho mostra o painel no macOS; no Windows ele tem os mesmos controles e abre ao clicar no ícone da bandeja, ao lado do relógio.
+O desenho mostra o painel no macOS; no Windows e no Linux ele tem os mesmos controles e abre ao clicar no ícone da bandeja (no Windows, ao lado do relógio; no Linux, no canto da tela onde fica a barra do sistema).
 
 ## Sumário
 
@@ -38,6 +38,8 @@ O desenho mostra o painel no macOS; no Windows ele tem os mesmos controles e abr
   - [macOS: compilar e instalar](#macos-compilar-e-instalar)
   - [Windows: baixar o executável](#windows-baixar-o-executável)
   - [Windows: compilar e instalar](#windows-compilar-e-instalar)
+  - [Linux: baixar o executável](#linux-baixar-o-executável)
+  - [Linux: compilar e instalar](#linux-compilar-e-instalar)
 - [3. Primeira configuração](#3-primeira-configuração)
 - [Uso](#uso)
 - [Atualização do estado](#atualização-do-estado)
@@ -50,7 +52,7 @@ O desenho mostra o painel no macOS; no Windows ele tem os mesmos controles e abr
 
 ## Recursos
 
-- **Ícone na barra de menu (macOS) ou na bandeja (Windows)** que acompanha o modo (❄ frio, ☀ quente, 💧 desumidificar, 🌀 ventilar) — cheio quando ligado, esmaecido quando desligado ou offline.
+- **Ícone na barra de menu (macOS) ou na bandeja (Windows e Linux)** que acompanha o modo (❄ frio, ☀ quente, 💧 desumidificar, 🌀 ventilar) — cheio quando ligado, esmaecido quando desligado ou offline.
 - **Painel no estilo Central de Controle** ao clicar no ícone.
 - **Liga/desliga.**
 - **Temperatura alvo** com `−`/`+`, respeitando a faixa e o passo do seu modelo (0,5° ou 1°). Cliques rápidos viram um único comando.
@@ -60,8 +62,8 @@ O desenho mostra o painel no macOS; no Windows ele tem os mesmos controles e abr
 - **Swing vertical e horizontal.**
 - **Timer para desligar**: 30 min, 1 h, 2 h, 3 h, 4 h, 6 h, 8 h, com contagem regressiva.
 - **Luz do visor** liga/desliga.
-- **Abre ao iniciar sessão** (opcional; no Windows, "Iniciar com o Windows").
-- **Nativo e leve**: no macOS, Swift + SwiftUI, sem ícone no Dock; no Windows, C# + WPF (.NET 10). Nenhum dos dois usa dependências de terceiros.
+- **Abre ao iniciar sessão** (opcional; no Windows, "Iniciar com o Windows"; no Linux, "Iniciar com o sistema").
+- **Nativo e leve**: no macOS, Swift + SwiftUI, sem ícone no Dock; no Windows, C# + WPF (.NET 10); no Linux, C# + Avalonia (.NET 10). Os apps de macOS e Windows não usam dependências de terceiros; o de Linux usa Avalonia e Tmds.DBus.Protocol (veja [Dependências do app de Linux](#dependências-do-app-de-linux)).
 
 O app lê as capacidades do aparelho na API da LG. Controles que o seu modelo não tem simplesmente não aparecem.
 
@@ -72,7 +74,7 @@ Os ar-condicionados LG com Wi-Fi não aceitam controle direto pela rede local: t
 ```
  ┌──────────────┐   HTTPS (REST)    ┌────────────────────────┐    Wi-Fi    ┌──────────────┐
  │    LG AC     │ ────────────────▶ │  LG ThinQ Connect API  │ ──────────▶ │  Ar-condic.  │
- │ (macOS/Win)  │ ◀──────────────── │  api-aic.lgthinq.com   │ ◀────────── │     LG       │
+ │(mac/win/lin) │ ◀──────────────── │  api-aic.lgthinq.com   │ ◀────────── │     LG       │
  └──────────────┘   estado / ok     └────────────────────────┘             └──────────────┘
 ```
 
@@ -96,11 +98,18 @@ No Windows:
 - Para usar o executável pronto, nada além disso: **não é preciso instalar o .NET**.
 - Para compilar você mesmo: Git e o SDK do .NET 10 (a versão mínima está em `windows/global.json`; baixe em [dotnet.microsoft.com/download](https://dotnet.microsoft.com/download)).
 
+No Linux:
+
+- Uma distribuição de desktop com glibc, em x64 ou ARM64: Ubuntu 22.04 ou mais novo, Debian 12 ou mais novo, Fedora, Arch e derivadas.
+- Uma sessão gráfica X11 ou Wayland (no Wayland o app roda via XWayland). Não funciona sem ambiente gráfico nem em distribuições com musl, como o Alpine.
+- Para usar o executável pronto, nada além das bibliotecas de um desktop comum: **não é preciso instalar o .NET**.
+- Para compilar você mesmo: Git e o SDK do .NET 10 (a versão mínima está em `linux/global.json`; baixe em [dotnet.microsoft.com/download](https://dotnet.microsoft.com/download)).
+
 ## 1. Gerar o token da LG
 
 1. Acesse **https://connect-pat.lgthinq.com** e entre com a mesma conta LG do app ThinQ.
 2. Clique em **ADD NEW TOKEN** (ou "Criar novo token").
-3. Dê um nome, por exemplo `mac-menubar` ou `windows-tray`.
+3. Dê um nome, por exemplo `mac-menubar`, `windows-tray` ou `linux-tray`.
 4. Marque as permissões:
    - **Permission to view all devices** (listar dispositivos)
    - **Permission to view all device statuses** (ver estado)
@@ -188,6 +197,48 @@ ou permita scripts locais para o seu usuário (uma vez):
 Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 ```
 
+### Linux: baixar o executável
+
+1. Descubra a arquitetura do seu computador com `uname -m`: `x86_64` é x64; `aarch64` (ou `arm64`) é ARM64.
+2. Abra a [página de Releases do repositório](https://github.com/YtaloAzeredo/lg-ac-menubar/releases) e, na versão mais recente, baixe o arquivo da sua arquitetura:
+   - `LG-AC-linux-x64` para processadores Intel ou AMD (a maioria);
+   - `LG-AC-linux-arm64` para processadores ARM.
+3. Dê permissão de execução e abra o app (os arquivos baixados vêm sem ela):
+
+```bash
+chmod +x LG-AC-linux-x64
+./LG-AC-linux-x64
+```
+
+O executável roda de qualquer pasta; uma sugestão é guardá-lo em `~/.local/bin`. Se você ativar "Iniciar com o sistema", essa opção aponta para o caminho em uso; se você mover o arquivo, o app corrige o caminho sozinho na próxima vez que for aberto.
+
+Para conferir a versão sem abrir a interface: `./LG-AC-linux-x64 --version`.
+
+### Linux: compilar e instalar
+
+Com o Git e o SDK do .NET 10 instalados:
+
+```bash
+git clone https://github.com/YtaloAzeredo/lg-ac-menubar.git
+cd lg-ac-menubar
+./linux/build-app.sh
+```
+
+O script:
+
+1. compila e publica o app em modo release, como um único executável autocontido, em `linux/dist/LG-AC-linux-x64` (ou `-arm64`);
+2. fecha o LG AC instalado, se estiver aberto;
+3. instala o executável em `~/.local/bin/lg-ac` e o ícone em `~/.local/share/icons/hicolor/256x256/apps/lg-ac.png` (respeitando `XDG_BIN_HOME` e `XDG_DATA_HOME`, se definidas);
+4. cria o lançador **LG AC** em `~/.local/share/applications/lg-ac.desktop`, que aparece no menu de aplicativos;
+5. abre o app.
+
+Opções:
+
+| Opção | Efeito |
+|---|---|
+| `--no-install` | só gera o executável em `linux/dist/`, sem instalar nem abrir (também funciona fora do Linux) |
+| `--runtime linux-x64` ou `--runtime linux-arm64` | escolhe a arquitetura do executável; o padrão é a do seu computador. Só é possível instalar a arquitetura do próprio computador, então outra exige `--no-install` |
+
 ## 3. Primeira configuração
 
 ### macOS
@@ -208,9 +259,18 @@ O token fica guardado no **Keychain** do macOS. Para trocar, use **⚙ → Troca
 
 O token fica guardado no **Gerenciador de Credenciais** do Windows. Para trocar, use **⚙ → Trocar token…**. Para controlar outro ar-condicionado da mesma conta, clique na seta **‹** no canto superior esquerdo do painel (ou **⚙ → Trocar aparelho…**) e, se mudar de ideia, **Cancelar** volta ao aparelho atual.
 
+### Linux
+
+1. Abra o app. Com bandeja (KDE, XFCE, Cinnamon, Ubuntu), o ícone aparece na bandeja do sistema; sem bandeja (GNOME puro), o app abre como uma janela normal. Veja [Particularidades do Linux](#particularidades-do-linux).
+2. Clique no ícone (ou use a janela) e cole o token no campo **Token**.
+3. Escolha o país (padrão: **Brasil**). O país define o servidor da LG usado (Brasil → região AIC).
+4. Clique em **Conectar**. O app encontra o seu ar-condicionado automaticamente e passa a mostrar os controles. Se a conta tiver mais de um ar-condicionado, aparece a lista **Escolha o ar-condicionado** para você escolher qual controlar.
+
+O token fica guardado no serviço de segredos do sistema (GNOME Keyring ou KWallet). Para trocar, use **⚙ → Trocar token…**. Para controlar outro ar-condicionado da mesma conta, clique na seta **‹** no canto superior esquerdo do painel (ou **⚙ → Trocar aparelho…**) e, se mudar de ideia, **Cancelar** volta ao aparelho atual.
+
 ## Uso
 
-Os controles são os mesmos nos dois sistemas.
+Os controles são os mesmos nos três sistemas.
 
 | Ação | Como |
 |---|---|
@@ -237,6 +297,29 @@ A tela muda na hora em que você clica; se a LG recusar o comando, o valor volta
 - O menu **⚙** tem **Trocar aparelho…** (com o aparelho conectado), **Trocar token…**, **Iniciar com o Windows** (marcável) e **Sair**.
 - Abrir o app de novo com ele já em execução não cria um segundo ícone.
 
+### Particularidades do Linux
+
+O app tem dois modos, escolhidos sozinho ao abrir, conforme o seu ambiente gráfico ofereça ou não uma bandeja.
+
+**Com bandeja** (KDE, XFCE, Cinnamon, Ubuntu):
+
+- O ícone da bandeja mostra o modo atual; passe o mouse para ver o nome do aparelho (no KDE e no Cinnamon).
+- No KDE, XFCE e Cinnamon, um **clique** no ícone abre e fecha o painel; no Ubuntu e no GNOME com a extensão, um clique abre o menu (use **Abrir painel**) e o **clique duplo** abre o painel. O painel também fecha com **Esc** ou ao clicar fora dele.
+- O menu do ícone (botão direito, ou como o seu ambiente abrir menus) tem **Abrir painel** e **Sair**.
+- O painel abre no canto da tela onde fica a barra do sistema, e não colado ao ícone: o Linux não informa a posição do ícone ao app.
+- No KDE e no XFCE, ao abrir junto com a sessão, o app espera até 15 s pela bandeja antes de abrir como janela.
+
+**Sem bandeja** (GNOME puro, como no Fedora Workstation e no Debian):
+
+- O app abre como uma janela normal, com entrada na barra de tarefas. **Fechar a janela encerra o app.**
+- Para ter o ícone na bandeja do GNOME, instale e ative a extensão **AppIndicator and KStatusNotifierItem Support** (pacote `gnome-shell-extension-appindicator` na maioria das distribuições) e abra o app de novo. O app confere a bandeja ao abrir, então a extensão precisa estar ativa antes.
+
+Nos dois modos:
+
+- O menu **⚙** tem **Trocar aparelho…** (com o aparelho conectado), **Trocar token…**, **Iniciar com o sistema** (marcável) e **Sair**.
+- Abrir o app de novo com ele já em execução mostra o painel da instância existente, sem criar outra.
+- O app segue o tema claro ou escuro do sistema (quando o ambiente informa o tema pelo portal do desktop, como GNOME e KDE).
+
 ## Atualização do estado
 
 A API da LG é consultada (não há push em tempo real). O app atualiza o estado:
@@ -244,7 +327,7 @@ A API da LG é consultada (não há push em tempo real). O app atualiza o estado
 - ao abrir o painel (se a última leitura tiver mais de 5 s);
 - ~1,5 s depois de cada comando, para confirmar;
 - a cada **5 minutos** em segundo plano, para manter o ícone correto;
-- quando o computador acorda do repouso (no Windows, cerca de 5 s depois de retomar);
+- quando o computador acorda do repouso (no Windows e no Linux, cerca de 5 s depois de retomar);
 - ao clicar em ⟳.
 
 Mudanças feitas pelo controle remoto ou pelo app do celular aparecem em até 5 minutos, ou imediatamente ao abrir o painel.
@@ -280,11 +363,30 @@ As mensagens da LG que não aparecem abaixo ("Ar-condicionado offline", "Limite 
 | "Iniciar com o Windows" está marcado, mas o app não abre no login | O Windows ignora a opção do app se ele foi desativado na lista de inicialização | Reative o **LG AC** em **Configurações → Aplicativos → Inicialização** ou no **Gerenciador de Tarefas → Aplicativos de inicialização** |
 | Abri o app duas vezes e só aparece um ícone | Esperado: o app permite uma única instância por usuário | Nada a fazer |
 
+### Linux
+
+As mensagens da LG que não aparecem abaixo ("Token inválido, gere um novo", "Sem conexão", "Ar-condicionado offline", "Limite de chamadas atingido", comando recusado, "Nenhum ar-condicionado encontrado", aparelho errado, controle ausente) têm a mesma causa e a mesma solução da tabela do macOS.
+
+| Mensagem / sintoma | Causa provável | O que fazer |
+|---|---|---|
+| "Permissão negada" ao executar o arquivo baixado | O arquivo não tem permissão de execução | `chmod +x LG-AC-linux-x64` (ou `-arm64`) e execute de novo |
+| O ícone não aparece (abre uma janela) | O ambiente não tem bandeja, como o GNOME puro sem extensão. O app percebe isso ao abrir e usa o modo janela | Use a janela, ou instale e ative a extensão **AppIndicator and KStatusNotifierItem Support** (`gnome-shell-extension-appindicator`) e abra o app de novo |
+| O sistema pede uma senha ao conectar | O cofre de senhas (chaveiro) está trancado e o serviço pede a senha para guardar o token | Digite a senha do chaveiro. Se cancelar, aparece "Não foi possível salvar o token" e o token não é guardado: conecte de novo |
+| "Não foi possível salvar o token" | O cofre recusou a gravação (pedido de senha cancelado ou serviço com problema) | Conecte de novo e informe a senha do chaveiro quando pedida |
+| Não há GNOME Keyring nem KWallet (ou o serviço não tem chaveiro padrão) | Sem serviço de segredos, o app não tem onde guardar o token com segurança | Esperado: o token fica no arquivo `~/.config/lg-ac/token`, com permissão 600 (só o seu usuário lê). Instale um serviço de segredos se preferir o cofre |
+| O painel abre num canto da tela, longe do ícone | O Linux não informa a posição do ícone da bandeja | Esperado: o painel abre no canto da tela onde fica a barra do sistema |
+| O app não abre no login, e **Iniciar com o sistema** aparece desmarcado | A entrada de início automático foi desligada fora do app (por exemplo, no GNOME Tweaks ou nas Configurações). O app respeita essa escolha | Marque **Iniciar com o sistema** de novo no menu ⚙ |
+| O app não abre em Alpine ou outra distribuição com musl | O executável exige glibc | Não suportado; use uma distribuição com glibc |
+| O app não abre numa máquina sem ambiente gráfico | O app precisa de uma sessão X11 ou Wayland | Não suportado sem ambiente gráfico |
+| Abri o app duas vezes e só aparece um ícone (ou uma janela) | Esperado: o app permite uma única instância por usuário; a segunda abertura só mostra o painel da primeira | Nada a fazer |
+
+Para ver mensagens de erro de inicialização, abra o app por um terminal: elas saem no `stderr`.
+
 ## Privacidade e segurança
 
-- No macOS, o token é salvo **somente no Keychain**; no Windows, **somente no Gerenciador de Credenciais**. Em nenhum dos dois ele é escrito em log ou arquivo.
+- No macOS, o token é salvo **somente no Keychain**; no Windows, **somente no Gerenciador de Credenciais**. Em nenhum dos dois ele é escrito em log ou arquivo. No Linux, ele fica no serviço de segredos do sistema (ou, se não houver um, num arquivo só seu; veja [No Linux](#no-linux)) e nunca em log.
 - O app conversa apenas com `api-*.lgthinq.com` via HTTPS. Nenhum dado é enviado a terceiros.
-- Configurações não sensíveis (id do aparelho, país, client-id) ficam no `UserDefaults` (macOS) ou no arquivo `%APPDATA%\LG AC\settings.json` (Windows), que nunca contém o token.
+- Configurações não sensíveis (id do aparelho, país, client-id) ficam no `UserDefaults` (macOS), no arquivo `%APPDATA%\LG AC\settings.json` (Windows) ou no arquivo `~/.config/lg-ac/settings.json` (Linux), que nunca contém o token.
 - As fixtures de teste no repositório não contêm dados de nenhum aparelho real (ids, nomes e modelos são fictícios ou anonimizados).
 
 ### No Windows
@@ -298,9 +400,24 @@ As mensagens da LG que não aparecem abaixo ("Ar-condicionado offline", "Limite 
   4. Apague o executável baixado, ou, se instalou com o script, a pasta `%LOCALAPPDATA%\Programs\LG AC` e o atalho **LG AC** do Menu Iniciar.
   5. Se quiser, revogue o token em https://connect-pat.lgthinq.com.
 
+### No Linux
+
+- O token fica no serviço de segredos do sistema (Secret Service: GNOME Keyring ou KWallet), num item rotulado **LG AC**. Para ver, abra o **Senhas e Chaves** (Seahorse) no GNOME ou o **KWalletManager** no KDE.
+- Se o sistema não tiver serviço de segredos, ou se o serviço não tiver um chaveiro padrão (comum em i3/sway), o token fica no arquivo `~/.config/lg-ac/token`, com permissão 600 (e a pasta com 700). Quando há um chaveiro disponível, o token vai para ele e esse arquivo é apagado na próxima vez que você conectar.
+- `~/.config/lg-ac/settings.json` guarda só país, aparelho escolhido (id e apelido) e o identificador do app.
+- A opção "Iniciar com o sistema" cria `~/.config/autostart/lg-ac.desktop`.
+- Se `XDG_CONFIG_HOME` estiver definida, ela substitui `~/.config` nos três caminhos acima.
+- O app não faz nenhuma comunicação além de `api-*.lgthinq.com`.
+- **Para remover tudo:**
+  1. Abra o menu **⚙** e desmarque **Iniciar com o sistema**; depois escolha **Sair**. Se o ⚙ não aparecer (tela de configuração), basta apagar o arquivo `~/.config/autostart/lg-ac.desktop`.
+  2. Apague o item **LG AC** no Senhas e Chaves ou no KWalletManager (ou use **⚙ → Trocar token…**, que também apaga o token guardado).
+  3. Apague a pasta `~/.config/lg-ac`.
+  4. Apague o executável baixado, ou, se instalou com o script, o executável `~/.local/bin/lg-ac`, o lançador `~/.local/share/applications/lg-ac.desktop` e o ícone `~/.local/share/icons/hicolor/256x256/apps/lg-ac.png`.
+  5. Se quiser, revogue o token em https://connect-pat.lgthinq.com.
+
 ## Desenvolvimento
 
-O código de cada sistema fica na sua pasta (`macos/` e `windows/`).
+O código de cada sistema fica na sua pasta (`macos/`, `windows/` e `linux/`).
 
 ### macOS
 
@@ -383,15 +500,50 @@ Só para conferir que compila (não dá para executar o WPF fora do Windows):
 dotnet build windows/src/LGAC.App -p:EnableWindowsTargeting=true
 ```
 
+### Linux
+
+Precisa do SDK do .NET 10 (veja [Requisitos](#requisitos)). Os testes rodam em Linux e em macOS.
+
+#### Rodar os testes
+
+```bash
+./linux/scripts/test.sh
+```
+
+O script roda `dotnet test` na solução do Linux (o núcleo `LGAC.Core` tem os próprios testes: `dotnet test windows/tests/LGAC.Core.Tests`). Os testes **nunca chamam a API real**. Os testes de integração com o D-Bus (serviço de segredos, bandeja, retomada de energia) só executam em Linux com um barramento de sessão; nos outros ambientes ficam como inconclusivos (`Inconclusive`), não como falha.
+
+Os testes de tela rodam sem monitor, com o Avalonia Headless, e salvam capturas PNG das telas na pasta `captures/` ao lado dos binários de teste (`linux/tests/LGAC.Linux.Tests/bin/<configuração>/net10.0/captures`).
+
+#### Rodar o app sem empacotar
+
+```bash
+dotnet run --project linux/src/LGAC.Linux
+dotnet run --project linux/src/LGAC.Linux -- --version
+dotnet run --project linux/src/LGAC.Linux -- --smoke
+```
+
+`--version` imprime a versão e sai. `--smoke` inicia a interface com dados de exemplo, sem acessar a rede nem o cofre, e sai com código 0 se tudo subiu (é o que o CI usa para provar que o executável inicia em cada distribuição). O `--smoke` precisa de uma sessão gráfica ou de um servidor X virtual (`xvfb-run`).
+
+#### Testar o executável em várias distribuições
+
+Precisa do Docker. Gere o executável e rode o script, que instala as dependências de um desktop mínimo em cada imagem (Ubuntu 22.04 e 24.04, Debian 12, Fedora e Arch) e roda `--version` e `--smoke` sem privilégios:
+
+```bash
+./linux/build-app.sh --no-install
+./linux/scripts/smoke-distros.sh linux/dist/LG-AC-linux-x64
+```
+
+Para testar só algumas imagens, repita `--image`: `./linux/scripts/smoke-distros.sh --image fedora:latest linux/dist/LG-AC-linux-x64`.
+
 ### CI e releases
 
-A cada push na `main` e a cada pull request, o GitHub Actions roda os testes e empacota o app dos dois sistemas, em jobs separados: `test` (macOS) e `windows` (`.github/workflows/tests.yml`).
+A cada push na `main` e a cada pull request, o GitHub Actions roda os testes e empacota o app dos três sistemas, em jobs separados: `test` (macOS), `windows` e `linux` (`.github/workflows/tests.yml`). O job `linux` roda os testes com um D-Bus de sessão e um chaveiro de verdade, gera o executável e o inicia em cada distribuição de teste.
 
-Ao publicar uma tag `v*` (por exemplo, `v1.0.0`), o workflow `.github/workflows/release.yml` roda os testes no Windows, gera `LG-AC-windows-x64.exe` e `LG-AC-windows-arm64.exe` e cria a release no GitHub com os dois arquivos anexados.
+Ao publicar uma tag `v*` (por exemplo, `v1.0.0`), o workflow `.github/workflows/release.yml` roda os testes no Windows e no Linux, gera `LG-AC-windows-x64.exe`, `LG-AC-windows-arm64.exe`, `LG-AC-linux-x64` e `LG-AC-linux-arm64` e cria a release no GitHub com os quatro arquivos anexados. Tags com hífen (por exemplo, `v1.0.0-rc1`) saem marcadas como pré-lançamento.
 
 ## Arquitetura
 
-O repositório é organizado por sistema operacional: cada sistema tem a própria pasta, com código, testes e scripts. A lógica foi escrita duas vezes, uma em Swift e outra em C# espelhando o Swift, sem ponte entre as linguagens. O que garante que os dois se comportem igual são as fixtures de `shared/`, em especial `commands.json` (cada ação do usuário e o JSON que ela envia), testado dos dois lados.
+O repositório é organizado por sistema operacional: cada sistema tem a própria pasta, com código, testes e scripts. A lógica foi escrita duas vezes, uma em Swift e outra em C# espelhando o Swift, sem ponte entre as linguagens. O que garante que os dois se comportem igual são as fixtures de `shared/`, em especial `commands.json` (cada ação do usuário e o JSON que ela envia), testado dos dois lados. O app de Linux reaproveita o núcleo em C# do Windows (`windows/src/LGAC.Core`) por referência de projeto, sem cópia; a lógica específica de tela e de sistema é própria de cada app.
 
 ```
 lg-ac-menubar/
@@ -416,9 +568,18 @@ lg-ac-menubar/
 │   │   └── LGAC.App.Tests/
 │   ├── scripts/              # test.ps1
 │   └── build-app.ps1
+├── linux/
+│   ├── LGAC.Linux.slnx
+│   ├── global.json           # versão do SDK do .NET
+│   ├── src/
+│   │   └── LGAC.Linux/       # Avalonia: Views/ (painel), Tray/ (bandeja), Platform/ (segredos, autostart, instância única), Theme/
+│   ├── tests/
+│   │   └── LGAC.Linux.Tests/
+│   ├── scripts/              # test.sh, smoke-distros.sh
+│   └── build-app.sh
 ├── shared/
 │   └── fixtures/             # JSONs de exemplo e contrato commands.json, usados nos testes dos dois lados
-├── .github/workflows/        # CI (testes e empacotamento) e release do Windows
+├── .github/workflows/        # CI (testes e empacotamento) e release do Windows e do Linux
 └── .githooks/                # pre-push: roda os testes do macOS antes do push
 ```
 
@@ -455,6 +616,21 @@ Uma solução .NET 10 com dois projetos de código e dois de teste:
 
 O app é publicado como um único executável autocontido (`PublishSingleFile`), para x64 e ARM64.
 
+### Linux
+
+Uma solução .NET 10 com um projeto de código e um de teste. O núcleo (`LGAC.Core`) vem do projeto do Windows.
+
+| Projeto | Tipo | Responsabilidade |
+|---|---|---|
+| `LGAC.Linux` | executável Avalonia | Painel (`Views/`), ícone da bandeja (`Tray/`), integração com o sistema (`Platform/`: serviço de segredos via D-Bus, arquivo do token, "Iniciar com o sistema", instância única, retomada de energia) e tema (`Theme/`) |
+| `LGAC.Linux.Tests` | testes | Testes das telas (Avalonia Headless) e das partes do app que dependem do Linux |
+
+O app é publicado como um único executável autocontido e reduzido (`PublishSingleFile` e `PublishTrimmed`), para x64 e ARM64.
+
+#### Dependências do app de Linux
+
+O app de Linux usa duas bibliotecas de terceiros, ambas com licença MIT: [Avalonia](https://avaloniaui.net) (interface) e [Tmds.DBus.Protocol](https://github.com/tmds/Tmds.DBus) (comunicação com o D-Bus). O executável também inclui SkiaSharp e HarfBuzzSharp (MIT), as bibliotecas nativas Skia (BSD-3-Clause) e HarfBuzz (MIT) e a fonte Inter (SIL Open Font License 1.1). Os apps de macOS e Windows continuam sem dependências de terceiros.
+
 ## Fora do escopo
 
 - Controlar vários aparelhos ao mesmo tempo (dá para alternar entre eles pela seta **‹** do painel).
@@ -462,6 +638,7 @@ O app é publicado como um único executável autocontido (`PublishSingleFile`),
 - Widget/Controle dentro da Central de Controle (exige Xcode e perfil de desenvolvedor Apple).
 - Distribuição pela App Store / notarização.
 - No Windows: executável assinado digitalmente (por isso o aviso do SmartScreen), instalador (MSI/MSIX) e atualização automática. Para atualizar, baixe o executável da versão nova ou rode o script de novo.
+- No Linux: Flatpak, Snap, AppImage, pacotes `.deb` e `.rpm`, distribuições com musl (como o Alpine), Wayland nativo (o app usa o XWayland) e painel colado ao ícone da bandeja. Para atualizar, baixe o executável da versão nova ou rode o script de novo.
 - Agendamentos, histórico de consumo e modos especiais (jet, economia de energia, purificação).
 
 ## Referências
