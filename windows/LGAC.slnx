@@ -1,8 +1,10 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/LGAC.App/LGAC.App.csproj" />
     <Project Path="src/LGAC.Core/LGAC.Core.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/LGAC.App.Tests/LGAC.App.Tests.csproj" />
     <Project Path="tests/LGAC.Core.Tests/LGAC.Core.Tests.csproj" />
   </Folder>
 </Solution>

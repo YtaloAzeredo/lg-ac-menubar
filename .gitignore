@@ -4,7 +4,8 @@
 Package.resolved
 
 # App empacotado
-*.app
+/*.app
+/macos/*.app
 dist/
 
 # Saída do lgac-dump (contém id real do aparelho)
