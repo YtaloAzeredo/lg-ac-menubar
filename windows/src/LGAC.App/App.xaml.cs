@@ -4,6 +4,7 @@ using System.Windows;
 using LGAC.App.Platform;
 using LGAC.App.Theme;
 using LGAC.App.Tray;
+using LGAC.App.Views;
 using LGAC.Core;
 using Microsoft.Win32;
 using Application = System.Windows.Application;
@@ -63,6 +64,8 @@ public partial class App : Application
         Controller = new ACController(Store);
 
         SystemTheme.Start();
+        var panel = new PanelWindow(Controller, Store, StartupRegistration);
+        TrayToggle = _ => panel.Toggle(Tray.LastAnchor);
         Tray = new TrayIcon(Controller, anchor => TrayToggle?.Invoke(anchor));
 
         SystemEvents.PowerModeChanged += OnPowerModeChanged;

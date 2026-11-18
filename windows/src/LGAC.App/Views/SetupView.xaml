@@ -1,0 +1,63 @@
+<UserControl x:Class="LGAC.App.Views.SetupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel Margin="16">
+        <StackPanel Margin="0,0,0,12" Orientation="Horizontal">
+            <Border x:Name="HeaderGlyph" Margin="0,0,6,0" VerticalAlignment="Center" />
+            <TextBlock VerticalAlignment="Center" Style="{StaticResource HeadlineText}" Text="Conectar ao LG ThinQ" />
+        </StackPanel>
+        <TextBlock Margin="0,0,0,12"
+                   Style="{StaticResource SecondaryText}"
+                   Text="Gere um Personal Access Token com permissão para ver e controlar aparelhos e cole abaixo."
+                   TextWrapping="Wrap" />
+        <Grid Margin="0,0,0,12">
+            <PasswordBox x:Name="TokenBox" AutomationProperties.Name="Token" PasswordChanged="OnTokenChanged" />
+            <TextBlock x:Name="TokenPlaceholder"
+                       Margin="9,0,0,0"
+                       VerticalAlignment="Center"
+                       FontSize="13"
+                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                       IsHitTestVisible="False"
+                       Text="Token" />
+        </Grid>
+        <Grid Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Margin="0,0,10,0" VerticalAlignment="Center" Text="País" />
+            <ComboBox x:Name="CountryBox" Grid.Column="1" AutomationProperties.Name="País" />
+        </Grid>
+        <TextBlock x:Name="MessageText"
+                   Margin="0,0,0,12"
+                   Foreground="{DynamicResource ErrorBrush}"
+                   Style="{StaticResource CaptionText}"
+                   TextWrapping="Wrap"
+                   Visibility="Collapsed" />
+        <Grid Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button x:Name="GenerateTokenButton"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Click="OnGenerateTokenClick"
+                    Content="Gerar token"
+                    Style="{StaticResource LinkButton}" />
+            <Button x:Name="ConnectButton"
+                    Grid.Column="1"
+                    Click="OnConnectClick"
+                    Content="Conectar"
+                    IsDefault="True"
+                    IsEnabled="False"
+                    Style="{StaticResource PrimaryButton}" />
+        </Grid>
+        <Border Margin="0,0,0,8" Style="{StaticResource Divider}" />
+        <Button x:Name="QuitButton"
+                HorizontalAlignment="Left"
+                Click="OnQuitClick"
+                Content="Sair"
+                Style="{StaticResource FlatButton}" />
+    </StackPanel>
+</UserControl>

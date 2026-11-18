@@ -1,0 +1,200 @@
+<UserControl x:Class="LGAC.App.Views.ControlPanelView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel Margin="14">
+        <Grid Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button x:Name="SwitchDeviceButton"
+                    Width="26"
+                    Height="26"
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="Trocar aparelho"
+                    Click="OnSwitchDeviceClick"
+                    Content="&#xE76B;"
+                    FontSize="11"
+                    Style="{StaticResource CircleButton}"
+                    ToolTip="Trocar aparelho" />
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock x:Name="AliasText" Style="{StaticResource HeadlineText}" TextTrimming="CharacterEllipsis" />
+                <TextBlock x:Name="AmbientText" Margin="0,2,0,0" Style="{StaticResource SecondaryText}" />
+            </StackPanel>
+            <Button x:Name="PowerButton"
+                    Grid.Column="2"
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    Click="OnPowerClick"
+                    Content="&#xE7E8;"
+                    Style="{StaticResource PowerButton}" />
+        </Grid>
+
+        <Border Margin="0,0,0,12" Style="{StaticResource Divider}" />
+
+        <StackPanel x:Name="Body" Margin="0,0,0,-12">
+            <Grid x:Name="TemperatureRow" Margin="0,0,0,12" HorizontalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Button x:Name="MinusButton"
+                        VerticalAlignment="Center"
+                        AutomationProperties.Name="Diminuir temperatura"
+                        Click="OnMinusClick"
+                        Content="&#xE738;"
+                        Style="{StaticResource CircleButton}" />
+                <TextBlock x:Name="TargetTempText"
+                           Grid.Column="1"
+                           MinWidth="96"
+                           Margin="8,0"
+                           VerticalAlignment="Center"
+                           FontSize="30"
+                           FontWeight="Light"
+                           TextAlignment="Center"
+                           Typography.NumeralAlignment="Tabular" />
+                <Button x:Name="PlusButton"
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        AutomationProperties.Name="Aumentar temperatura"
+                        Click="OnPlusClick"
+                        Content="&#xE710;"
+                        Style="{StaticResource CircleButton}" />
+            </Grid>
+
+            <StackPanel x:Name="ModeSection" Margin="0,0,0,12">
+                <TextBlock Margin="0,0,0,6" Style="{StaticResource SecondaryText}" Text="Modo" />
+                <UniformGrid x:Name="ModeGrid" Margin="-3" Columns="4" />
+            </StackPanel>
+
+            <StackPanel x:Name="WindSection" Margin="0,0,0,12">
+                <TextBlock Margin="0,0,0,6" Style="{StaticResource SecondaryText}" Text="Ventilador" />
+                <UniformGrid x:Name="WindGrid" Margin="-3" Columns="4" />
+            </StackPanel>
+
+            <StackPanel x:Name="Switches" Margin="0,0,0,6">
+                <Grid x:Name="SwingUpDownRow" Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource GlyphText}" Text="&#xE8CB;" />
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="Swing vertical" />
+                    <ToggleButton x:Name="SwingUpDownToggle"
+                                  Grid.Column="2"
+                                  AutomationProperties.Name="Swing vertical"
+                                  Click="OnSwingUpDownClick"
+                                  Style="{StaticResource SwitchToggle}" />
+                </Grid>
+                <Grid x:Name="SwingLeftRightRow" Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource GlyphText}" Text="&#xE8AB;" />
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="Swing horizontal" />
+                    <ToggleButton x:Name="SwingLeftRightToggle"
+                                  Grid.Column="2"
+                                  AutomationProperties.Name="Swing horizontal"
+                                  Click="OnSwingLeftRightClick"
+                                  Style="{StaticResource SwitchToggle}" />
+                </Grid>
+                <Grid x:Name="DisplayLightRow" Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource GlyphText}" Text="&#xEA80;" />
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="Luz do visor" />
+                    <ToggleButton x:Name="DisplayLightToggle"
+                                  Grid.Column="2"
+                                  AutomationProperties.Name="Luz do visor"
+                                  Click="OnDisplayLightClick"
+                                  Style="{StaticResource SwitchToggle}" />
+                </Grid>
+                <Grid x:Name="TimerRow" Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource GlyphText}" Text="&#xE916;" />
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="Desligar em" />
+                    <Button x:Name="TimerButton"
+                            Grid.Column="2"
+                            AutomationProperties.Name="Desligar em"
+                            Click="OnTimerClick"
+                            Style="{StaticResource DropDownButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="TimerText" VerticalAlignment="Center" />
+                            <TextBlock Margin="8,0,0,0"
+                                       FontSize="10"
+                                       Style="{StaticResource GlyphText}"
+                                       Text="&#xE70D;" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </StackPanel>
+
+        <Border Margin="0,12,0,12" Style="{StaticResource Divider}" />
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid VerticalAlignment="Center">
+                <Grid x:Name="StatusPanel" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Margin="0,2,6,0"
+                               VerticalAlignment="Top"
+                               FontSize="12"
+                               Foreground="{DynamicResource WarningBrush}"
+                               Style="{StaticResource GlyphText}"
+                               Text="&#xE7BA;" />
+                    <TextBlock x:Name="StatusText"
+                               Grid.Column="1"
+                               MaxHeight="32"
+                               FontSize="12"
+                               Foreground="{DynamicResource WarningBrush}"
+                               LineHeight="16"
+                               LineStackingStrategy="BlockLineHeight"
+                               TextTrimming="CharacterEllipsis"
+                               TextWrapping="Wrap" />
+                </Grid>
+                <TextBlock x:Name="UpdatedText"
+                           Style="{StaticResource SecondaryText}"
+                           TextTrimming="CharacterEllipsis"
+                           Visibility="Collapsed" />
+            </Grid>
+            <Button x:Name="RefreshButton"
+                    Grid.Column="1"
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="Atualizar agora"
+                    Click="OnRefreshClick"
+                    Content="&#xE72C;"
+                    Style="{StaticResource IconButton}"
+                    ToolTip="Atualizar agora" />
+            <Button x:Name="SettingsButton"
+                    Grid.Column="2"
+                    Margin="2,0,0,0"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="Configurações"
+                    Click="OnSettingsClick"
+                    Content="&#xE713;"
+                    Style="{StaticResource IconButton}" />
+        </Grid>
+    </StackPanel>
+</UserControl>
