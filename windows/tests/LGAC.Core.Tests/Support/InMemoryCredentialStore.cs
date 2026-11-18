@@ -14,6 +14,10 @@ public sealed class InMemoryCredentialStore : ICredentialStore
 
     public Exception? SaveError { get; set; }
 
+    public Exception? ReadError { get; set; }
+
+    public Exception? DeleteError { get; set; }
+
     public int VaultAccesses { get; private set; }
 
     public string? Token
@@ -21,6 +25,11 @@ public sealed class InMemoryCredentialStore : ICredentialStore
         get
         {
             VaultAccesses++;
+            if (ReadError is not null)
+            {
+                throw ReadError;
+            }
+
             return storedToken;
         }
         set => storedToken = value;
@@ -40,6 +49,11 @@ public sealed class InMemoryCredentialStore : ICredentialStore
     public void DeleteToken()
     {
         VaultAccesses++;
+        if (DeleteError is not null)
+        {
+            throw DeleteError;
+        }
+
         storedToken = null;
     }
 
