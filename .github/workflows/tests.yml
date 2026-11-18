@@ -36,3 +36,27 @@ jobs:
       - name: Gerar o executável (sem instalar)
         shell: pwsh
         run: ./windows/build-app.ps1 -NoInstall
+
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      AVALONIA_TELEMETRY_OPTOUT: '1'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: linux/global.json
+      - name: Instalar dependências do sistema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y dbus gnome-keyring libfontconfig1
+      - name: Testes
+        env:
+          LGAC_REQUIRE_DBUS: '1'
+        run: |
+          dbus-run-session -- bash -c 'echo -n teste-ci | gnome-keyring-daemon --unlock --components=secrets >/dev/null && ./linux/scripts/test.sh'
+      - name: Gerar o executável (sem instalar)
+        run: ./linux/build-app.sh --no-install
+      - name: Iniciar em cada distribuição
+        run: ./linux/scripts/smoke-distros.sh linux/dist/LG-AC-linux-x64

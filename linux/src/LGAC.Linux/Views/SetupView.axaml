@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="LGAC.Linux.Views.SetupView">
+    <StackPanel Margin="16">
+        <StackPanel Margin="0,0,0,12" Orientation="Horizontal">
+            <PathIcon Width="16" Height="16" Margin="0,0,6,0" VerticalAlignment="Center" Data="{StaticResource Icon.ModeCool}" />
+            <TextBlock VerticalAlignment="Center" Classes="headline" Text="Conectar ao LG ThinQ" />
+        </StackPanel>
+        <TextBlock Margin="0,0,0,12"
+                   Classes="secondary"
+                   Text="Gere um Personal Access Token com permissão para ver e controlar aparelhos e cole abaixo."
+                   TextWrapping="Wrap" />
+        <TextBox x:Name="TokenBox"
+                 Margin="0,0,0,12"
+                 AutomationProperties.Name="Token"
+                 IsUndoEnabled="False"
+                 PasswordChar="•"
+                 PlaceholderText="Token" />
+        <Grid Margin="0,0,0,12" ColumnDefinitions="Auto,*">
+            <TextBlock Margin="0,0,10,0" VerticalAlignment="Center" Text="País" />
+            <ComboBox x:Name="CountryBox"
+                      Grid.Column="1"
+                      HorizontalAlignment="Stretch"
+                      AutomationProperties.Name="País" />
+        </Grid>
+        <TextBlock x:Name="MessageText"
+                   Margin="0,0,0,12"
+                   Classes="error"
+                   IsVisible="False"
+                   TextWrapping="Wrap" />
+        <Grid Margin="0,0,0,12" ColumnDefinitions="*,Auto">
+            <Button x:Name="GenerateTokenButton"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Classes="link"
+                    Click="OnGenerateTokenClick"
+                    Content="Gerar token" />
+            <Button x:Name="ConnectButton"
+                    Grid.Column="1"
+                    Classes="accent"
+                    Click="OnConnectClick"
+                    Content="Conectar"
+                    IsDefault="True"
+                    IsEnabled="False" />
+        </Grid>
+        <Border Margin="0,0,0,8" Classes="divider" />
+        <Button x:Name="QuitButton"
+                Margin="-8,0,0,0"
+                HorizontalAlignment="Left"
+                Classes="flat"
+                Click="OnQuitClick"
+                Content="Sair" />
+    </StackPanel>
+</UserControl>

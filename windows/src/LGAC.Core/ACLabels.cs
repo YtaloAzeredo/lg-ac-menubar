@@ -4,7 +4,14 @@ namespace LGAC.Core;
 
 public static class ACLabels
 {
-    private static readonly CultureInfo PtBr = CultureInfo.GetCultureInfo("pt-BR");
+    private static readonly NumberFormatInfo DecimalComma = CreateDecimalComma();
+
+    private static NumberFormatInfo CreateDecimalComma()
+    {
+        var format = (NumberFormatInfo)NumberFormatInfo.InvariantInfo.Clone();
+        format.NumberDecimalSeparator = ",";
+        return format;
+    }
 
     public static string JobMode(string mode)
     {
@@ -50,7 +57,7 @@ public static class ACLabels
 
     public static string Temperature(double value)
     {
-        return value.ToString("0.#", PtBr) + "°";
+        return value.ToString("0.#", DecimalComma) + "°";
     }
 
     public static string Humanize(string raw)

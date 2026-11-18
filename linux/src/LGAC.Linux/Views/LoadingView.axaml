@@ -1,0 +1,44 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="LGAC.Linux.Views.LoadingView">
+    <Grid>
+        <Button x:Name="SwitchDeviceButton"
+                Width="26"
+                Height="26"
+                Margin="10"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Classes="icon"
+                AutomationProperties.Name="Trocar aparelho"
+                Click="OnSwitchDeviceClick"
+                IsVisible="False"
+                ToolTip.Tip="Trocar aparelho"
+                ZIndex="1">
+            <PathIcon Data="{StaticResource Icon.Back}" />
+        </Button>
+        <StackPanel Margin="20">
+            <Path x:Name="Spinner" HorizontalAlignment="Center" Classes="spinner" />
+            <StackPanel x:Name="MessagePanel" Margin="0,10,0,0" IsVisible="False">
+                <TextBlock x:Name="MessageText"
+                           HorizontalAlignment="Center"
+                           Classes="secondary"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap" />
+                <StackPanel Margin="0,10,0,0" HorizontalAlignment="Center" Orientation="Horizontal">
+                    <Button x:Name="RetryButton"
+                            VerticalAlignment="Center"
+                            Click="OnRetryClick"
+                            Content="Tentar de novo" />
+                    <Button x:Name="SettingsButton"
+                            Margin="10,0,0,0"
+                            VerticalAlignment="Center"
+                            Classes="icon"
+                            AutomationProperties.Name="Configurações"
+                            Click="OnSettingsClick">
+                        <PathIcon Data="{StaticResource Icon.Settings}" />
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

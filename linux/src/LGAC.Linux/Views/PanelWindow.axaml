@@ -1,0 +1,24 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="LGAC.Linux.Views.PanelWindow"
+        Title="LG AC"
+        Width="320"
+        CanResize="False"
+        FontSize="13"
+        SizeToContent="Height">
+    <Border x:Name="Root"
+            Background="{DynamicResource PanelBackgroundBrush}"
+            BorderBrush="{DynamicResource PanelBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="8">
+        <ScrollViewer x:Name="Scroller"
+                      Focusable="False"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto">
+            <ContentControl x:Name="Host"
+                            VerticalAlignment="Top"
+                            Focusable="False"
+                            IsTabStop="False" />
+        </ScrollViewer>
+    </Border>
+</Window>

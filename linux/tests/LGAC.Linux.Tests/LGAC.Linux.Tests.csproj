@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" Version="4.0.2" />
+    <PackageReference Include="Avalonia.Headless" Version="12.1.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\LGAC.Linux\LGAC.Linux.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\windows\tests\LGAC.Core.Tests\Support\FakeClient.cs" Link="Support\Core\FakeClient.cs" />
+    <Compile Include="..\..\..\windows\tests\LGAC.Core.Tests\Support\PollClock.cs" Link="Support\Core\PollClock.cs" />
+    <Compile Include="..\..\..\windows\tests\LGAC.Core.Tests\Support\ControllerHarness.cs" Link="Support\Core\ControllerHarness.cs" />
+    <Compile Include="..\..\..\windows\tests\LGAC.Core.Tests\Support\InMemoryCredentialStore.cs" Link="Support\Core\InMemoryCredentialStore.cs" />
+    <Compile Include="..\..\..\windows\tests\LGAC.Core.Tests\Support\InMemoryTokenVault.cs" Link="Support\Core\InMemoryTokenVault.cs" />
+    <Compile Include="..\..\..\windows\tests\LGAC.Core.Tests\Support\Fixture.cs" Link="Support\Core\Fixture.cs" />
+  </ItemGroup>
+
+</Project>

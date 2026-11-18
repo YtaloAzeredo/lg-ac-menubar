@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LGAC.Linux/LGAC.Linux.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LGAC.Linux.Tests/LGAC.Linux.Tests.csproj" />
+  </Folder>
+</Solution>

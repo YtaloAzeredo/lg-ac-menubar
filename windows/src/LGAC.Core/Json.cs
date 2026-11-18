@@ -20,7 +20,7 @@ public static class Json
     {
         if (node is JsonValue value && value.GetValueKind() == JsonValueKind.String)
         {
-            return JsonSerializer.Deserialize<string>(value.ToJsonString());
+            return value.GetValue<string>();
         }
 
         return null;

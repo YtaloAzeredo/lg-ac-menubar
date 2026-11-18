@@ -51,4 +51,28 @@ public class ACLabelsTests
             CultureInfo.CurrentCulture = previous;
         }
     }
+
+    [TestMethod]
+    public void FormatsDoNotDependOnCulture()
+    {
+        var previous = CultureInfo.CurrentCulture;
+        var previousUi = CultureInfo.CurrentUICulture;
+        try
+        {
+            foreach (var name in new[] { "en-US", "" })
+            {
+                var culture = CultureInfo.GetCultureInfo(name);
+                CultureInfo.CurrentCulture = culture;
+                CultureInfo.CurrentUICulture = culture;
+                Assert.AreEqual("23,5°", ACLabels.Temperature(23.5));
+                Assert.AreEqual("22,5°", ACLabels.Temperature(22.5));
+                Assert.AreEqual("23°", ACLabels.Temperature(23));
+            }
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previous;
+            CultureInfo.CurrentUICulture = previousUi;
+        }
+    }
 }
