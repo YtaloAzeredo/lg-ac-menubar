@@ -94,7 +94,7 @@ No Windows:
 
 - Windows 11 (x64 ou ARM64). O Windows 10 deve funcionar, mas sem garantia.
 - Para usar o executável pronto, nada além disso: **não é preciso instalar o .NET**.
-- Para compilar você mesmo: Git e o SDK do .NET 10 (a versão exata esperada está em `windows/global.json`; baixe em [dotnet.microsoft.com/download](https://dotnet.microsoft.com/download)).
+- Para compilar você mesmo: Git e o SDK do .NET 10 (a versão mínima está em `windows/global.json`; baixe em [dotnet.microsoft.com/download](https://dotnet.microsoft.com/download)).
 
 ## 1. Gerar o token da LG
 
@@ -153,7 +153,7 @@ O primeiro arranque é um pouco mais lento: o executável extrai bibliotecas par
 
 ### Windows: compilar e instalar
 
-Num PowerShell, dentro do repositório clonado (com o SDK do .NET 10 instalado):
+Num PowerShell, com o Git e o SDK do .NET 10 instalados:
 
 ```powershell
 git clone https://github.com/YtaloAzeredo/lg-ac-menubar.git
@@ -164,7 +164,7 @@ cd lg-ac-menubar
 O script:
 
 1. compila e publica o app em modo release, como um único executável autocontido, em `windows\dist\LG-AC-windows-x64.exe` (ou `-arm64`);
-2. fecha a versão que estiver aberta;
+2. fecha o LG AC instalado, se estiver aberto (se estiver usando um executável baixado, feche-o antes pelo ⚙ → **Sair**);
 3. copia o executável para `%LOCALAPPDATA%\Programs\LG AC\LG AC.exe`;
 4. cria o atalho **LG AC** no Menu Iniciar;
 5. abre o app.
@@ -234,7 +234,7 @@ A tela muda na hora em que você clica; se a LG recusar o comando, o valor volta
 - O ícone da bandeja mostra o modo atual; passe o mouse para ver o nome do aparelho.
 - **Clique esquerdo** no ícone abre e fecha o painel. O painel também fecha com **Esc** ou ao clicar fora dele.
 - **Clique direito** no ícone abre um menu com **Sair**.
-- O menu **⚙** tem **Trocar aparelho…** (só aparece se a conta tiver mais de um), **Trocar token…**, **Iniciar com o Windows** (marcável) e **Sair**.
+- O menu **⚙** tem **Trocar aparelho…** (com o aparelho conectado), **Trocar token…**, **Iniciar com o Windows** (marcável) e **Sair**.
 - Abrir o app de novo com ele já em execução não cria um segundo ícone.
 
 ## Atualização do estado
@@ -292,7 +292,7 @@ As mensagens da LG que não aparecem abaixo ("Ar-condicionado offline", "Limite 
 - O token é uma credencial genérica chamada **LG AC**, visível em **Painel de Controle → Gerenciador de Credenciais → Credenciais do Windows**.
 - `%APPDATA%\LG AC\settings.json` guarda só país, aparelho escolhido (id e apelido) e o identificador do app.
 - **Para remover tudo:**
-  1. Abra o menu **⚙** e desmarque **Iniciar com o Windows**; depois escolha **Sair**.
+  1. Abra o menu **⚙** e desmarque **Iniciar com o Windows**; depois escolha **Sair**. Se o ⚙ não aparecer (tela de configuração), rode `reg delete HKCU\Software\Microsoft\Windows\CurrentVersion\Run /v "LG AC" /f`.
   2. Apague a credencial **LG AC** no Gerenciador de Credenciais (ou use **⚙ → Trocar token…**, que também apaga o token guardado).
   3. Apague a pasta `%APPDATA%\LG AC`.
   4. Apague o executável baixado, ou, se instalou com o script, a pasta `%LOCALAPPDATA%\Programs\LG AC` e o atalho **LG AC** do Menu Iniciar.

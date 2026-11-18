@@ -27,3 +27,5 @@ bin/
 obj/
 windows/dist/
 *.user
+.vs/
+TestResults/

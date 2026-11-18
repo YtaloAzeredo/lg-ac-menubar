@@ -1,6 +1,6 @@
 # Fixtures
 
-JSON de exemplo da API LG ThinQ Connect, compartilhados pelos testes do app macOS (`macos/`) e, futuramente, pelos do app Windows. Os testes do macOS leem esta pasta direto, a partir da raiz do repositório. Nenhum arquivo aqui contém dados de um aparelho real.
+JSON de exemplo da API LG ThinQ Connect, compartilhados pelos testes dos dois apps (`macos/` e `windows/`). Os dois lados leem esta pasta direto, a partir da raiz do repositório. Nenhum arquivo aqui contém dados de um aparelho real.
 
 - `profile-full.json` / `state-full.json` — modelo com todos os recursos que o app usa. Estrutura baseada nas fixtures de ar-condicionado da integração `lg_thinq` do Home Assistant (Apache-2.0), com luz do visor, timer ativo e modos extras acrescentados.
 - `profile-basic.json` / `state-basic.json` — modelo fictício "básico": sem swing horizontal, sem luz do visor, sem timer, ventilador em `windStrengthDetail`, temperatura com passo de 0,5°.

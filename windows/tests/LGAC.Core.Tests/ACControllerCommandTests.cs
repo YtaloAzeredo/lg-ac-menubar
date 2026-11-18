@@ -215,8 +215,9 @@ public class ACControllerCommandTests
             fake.HoldNextControl();
 
             var sending = controller.SendAsync(new ACCommand.JobMode("HEAT"));
-            while (!fake.IsControlHeld)
+            for (var spins = 0; !fake.IsControlHeld; spins++)
             {
+                Assert.IsLessThan(10_000, spins);
                 await ControllerHarness.YieldAsync();
             }
 

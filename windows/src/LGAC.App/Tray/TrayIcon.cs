@@ -125,15 +125,21 @@ public sealed class TrayIcon : IDisposable
             return;
         }
 
-        var state = controller.State;
-        var active = state?.IsOn == true && !controller.IsDeviceOffline;
-        var icon = ModeIcon.Render(state?.JobMode, !active, SystemTheme.IsTaskbarLight, SystemInformation.SmallIconSize.Width);
-        var previous = currentIcon;
-        notifyIcon.Icon = icon;
-        currentIcon = icon;
-        previous?.Dispose();
+        try
+        {
+            var state = controller.State;
+            var active = state?.IsOn == true && !controller.IsDeviceOffline;
+            var icon = ModeIcon.Render(state?.JobMode, !active, SystemTheme.IsTaskbarLight, SystemInformation.SmallIconSize.Width);
+            var previous = currentIcon;
+            notifyIcon.Icon = icon;
+            currentIcon = icon;
+            previous?.Dispose();
 
-        notifyIcon.Text = TipFor(controller.DeviceAlias);
+            notifyIcon.Text = TipFor(controller.DeviceAlias);
+        }
+        catch (Exception)
+        {
+        }
     }
 
     private static string TipFor(string alias)

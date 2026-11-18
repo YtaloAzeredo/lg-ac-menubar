@@ -192,8 +192,8 @@ public class FileCredentialStoreTests
         Assert.IsTrue(clientId.StartsWith("lgac-", StringComparison.Ordinal));
         Assert.AreEqual("BR", store.Country);
         Assert.IsTrue(Directory.Exists(SettingsPath));
-        Assert.AreEqual(0, Directory.GetFileSystemEntries(SettingsPath).Length);
-        Assert.AreEqual(1, Directory.GetFileSystemEntries(directory).Length);
+        Assert.IsEmpty(Directory.GetFileSystemEntries(SettingsPath));
+        Assert.HasCount(1, Directory.GetFileSystemEntries(directory));
     }
 
     [TestMethod]
