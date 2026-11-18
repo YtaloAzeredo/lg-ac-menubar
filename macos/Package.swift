@@ -10,8 +10,7 @@ let package = Package(
         .executableTarget(name: "lgac-dump", dependencies: ["LGACCore"]),
         .testTarget(
             name: "LGACCoreTests",
-            dependencies: ["LGACCore"],
-            resources: [.copy("Fixtures")]
+            dependencies: ["LGACCore"]
         ),
     ]
 )

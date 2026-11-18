@@ -4,7 +4,8 @@
 Package.resolved
 
 # App empacotado
-*.app
+/*.app
+/macos/*.app
 dist/
 
 # Saída do lgac-dump (contém id real do aparelho)
@@ -20,3 +21,11 @@ dump/
 # Designs e planos de implementação (locais, fora do git)
 docs/
 tasks/
+
+# .NET (app de Windows)
+bin/
+obj/
+windows/dist/
+*.user
+.vs/
+TestResults/

@@ -1,0 +1,35 @@
+name: Publicar release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: windows/global.json
+      - name: Testes
+        shell: pwsh
+        run: ./windows/scripts/test.ps1
+      - name: Gerar executável x64
+        shell: pwsh
+        run: ./windows/build-app.ps1 -NoInstall -Runtime win-x64
+      - name: Gerar executável arm64
+        shell: pwsh
+        run: ./windows/build-app.ps1 -NoInstall -Runtime win-arm64
+      - name: Criar a release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $flags = @()
+          if ($env:GITHUB_REF_NAME -like '*-*') { $flags += '--prerelease' }
+          gh release create "$env:GITHUB_REF_NAME" --generate-notes --verify-tag @flags windows/dist/LG-AC-windows-x64.exe windows/dist/LG-AC-windows-arm64.exe
