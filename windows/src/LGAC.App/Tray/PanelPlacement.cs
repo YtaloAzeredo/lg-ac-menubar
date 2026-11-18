@@ -96,6 +96,17 @@ public static class PanelPlacement
 
     private static Rectangle TaskbarEdgeAnchor(Rectangle workingArea, Rectangle bounds, Point cursor)
     {
+        if (workingArea == bounds)
+        {
+            return new[]
+            {
+                (bounds.Bottom - cursor.Y, new Rectangle(cursor.X, bounds.Bottom, 1, 1)),
+                (cursor.Y - bounds.Top, new Rectangle(cursor.X, bounds.Top - 1, 1, 1)),
+                (cursor.X - bounds.Left, new Rectangle(bounds.Left - 1, cursor.Y, 1, 1)),
+                (bounds.Right - cursor.X, new Rectangle(bounds.Right, cursor.Y, 1, 1)),
+            }.MinBy(entry => entry.Item1).Item2;
+        }
+
         if (workingArea.Top > bounds.Top)
         {
             return new Rectangle(cursor.X, workingArea.Top - 1, 1, 1);

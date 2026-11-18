@@ -41,7 +41,7 @@ public partial class PanelWindow : Window
         ("MenuHoverBrush", 0xFFDCDCDC, 0xFF474747),
         ("DividerBrush", 0xFFE0E0E0, 0xFF3D3D3D),
         ("ScrollThumbBrush", 0xFF9E9E9E, 0xFF7A7A7A),
-        ("SwitchOffBrush", 0xFF8C8C8C, 0xFF5E5E5E),
+        ("SwitchOffBrush", 0xFF8C8C8C, 0xFF808080),
         ("SwitchKnobBrush", 0xFFFFFFFF, 0xFFE6E6E6),
         ("FocusBrush", 0xFF1B1B1B, 0xFFF3F3F3),
     ];
@@ -123,16 +123,14 @@ public partial class PanelWindow : Window
         hasAnchor = true;
         ApplyTheme();
         RenderPhase();
+        Scroller.ScrollToHome();
 
         var handle = new WindowInteropHelper(this).EnsureHandle();
         var bounds = BoundsFor(MeasureContentHeight());
         MoveTo(handle, bounds);
         Show();
         MoveTo(handle, bounds);
-        if (!Activate())
-        {
-            SetForegroundWindow(handle);
-        }
+        Activate();
 
         _ = RefreshOnOpenAsync();
     }
@@ -174,8 +172,14 @@ public partial class PanelWindow : Window
             return;
         }
 
-        shownPhase = phase;
+        var previous = Host.Content;
         Host.Content = CreateView(phase);
+        shownPhase = phase;
+        (previous as IDisposable)?.Dispose();
+        if (previous is not null)
+        {
+            Scroller.ScrollToHome();
+        }
     }
 
     private FrameworkElement CreateView(ACPhase phase)
@@ -343,6 +347,13 @@ public partial class PanelWindow : Window
         closed = true;
         controller.PropertyChanged -= OnControllerPropertyChanged;
         SystemTheme.Changed -= OnSystemThemeChanged;
+        try
+        {
+            (Host.Content as IDisposable)?.Dispose();
+        }
+        catch (Exception)
+        {
+        }
     }
 
     private void OnControllerPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -422,8 +433,4 @@ public partial class PanelWindow : Window
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
-
-    [DllImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool SetForegroundWindow(IntPtr hWnd);
 }

@@ -128,7 +128,6 @@
                     <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="Desligar em" />
                     <Button x:Name="TimerButton"
                             Grid.Column="2"
-                            AutomationProperties.Name="Desligar em"
                             Click="OnTimerClick"
                             Style="{StaticResource DropDownButton}">
                         <StackPanel Orientation="Horizontal">

@@ -13,7 +13,7 @@ using LGAC.Core;
 
 namespace LGAC.App.Views;
 
-public partial class ControlPanelView : UserControl
+public partial class ControlPanelView : UserControl, IDisposable
 {
     private const string AccentBrushKey = "AccentBrush";
     private const string AccentForegroundBrushKey = "AccentForegroundBrush";
@@ -30,8 +30,7 @@ public partial class ControlPanelView : UserControl
     private readonly StartupRegistration startup;
     private readonly DispatcherTimer clock;
     private ContextMenu? openMenu;
-    private bool subscribed;
-    private bool rendering;
+    private bool disposed;
 
     public ControlPanelView(ACController controller, StartupRegistration startup)
     {
@@ -41,10 +40,23 @@ public partial class ControlPanelView : UserControl
 
         clock = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         clock.Tick += OnClockTick;
-        Loaded += OnLoaded;
-        Unloaded += OnUnloaded;
         IsVisibleChanged += OnIsVisibleChanged;
+        controller.PropertyChanged += OnControllerPropertyChanged;
         Render();
+    }
+
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        controller.PropertyChanged -= OnControllerPropertyChanged;
+        clock.Stop();
+        clock.Tick -= OnClockTick;
+        CloseMenu();
     }
 
     internal static FrameworkElement CreateModeGlyph(string? mode)
@@ -81,62 +93,56 @@ public partial class ControlPanelView : UserControl
 
     private void Render()
     {
-        rendering = true;
-        try
+        var caps = controller.Capabilities;
+        var state = controller.State ?? new ACState();
+        var isOn = state.IsOn == true;
+
+        SwitchDeviceButton.Visibility = VisibleWhen(controller.CanSwitchDevice);
+        AliasText.Text = string.IsNullOrEmpty(controller.DeviceAlias) ? "Ar-condicionado" : controller.DeviceAlias;
+        if (state.CurrentTemp is { } current)
         {
-            var caps = controller.Capabilities;
-            var state = controller.State ?? new ACState();
-            var isOn = state.IsOn == true;
-
-            SwitchDeviceButton.Visibility = VisibleWhen(controller.CanSwitchDevice);
-            AliasText.Text = string.IsNullOrEmpty(controller.DeviceAlias) ? "Ar-condicionado" : controller.DeviceAlias;
-            if (state.CurrentTemp is { } current)
-            {
-                AmbientText.Text = "Ambiente " + ACLabels.Temperature(current);
-                AmbientText.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                AmbientText.Text = string.Empty;
-                AmbientText.Visibility = Visibility.Collapsed;
-            }
-
-            var powerLabel = isOn ? "Desligar" : "Ligar";
-            PowerButton.IsEnabled = caps?.Power == true;
-            PowerButton.SetResourceReference(Control.BackgroundProperty, isOn ? AccentBrushKey : ControlBackgroundBrushKey);
-            PowerButton.SetResourceReference(Control.ForegroundProperty, isOn ? AccentForegroundBrushKey : PanelForegroundBrushKey);
-            PowerButton.ToolTip = powerLabel;
-            AutomationProperties.SetName(PowerButton, powerLabel);
-
-            Body.IsEnabled = isOn;
-            Body.Opacity = isOn ? 1 : DimmedOpacity;
-
-            TemperatureRow.Visibility = VisibleWhen(caps?.TargetTemp is not null);
-            TargetTempText.Text = state.TargetTemp is { } target ? ACLabels.Temperature(target) : "–";
-
-            RenderChoices(ModeSection, ModeGrid, caps?.JobModes ?? Array.Empty<string>(), state.JobMode, true, ACLabels.JobMode, OnModeClick);
-            RenderChoices(WindSection, WindGrid, caps?.WindStrengths ?? Array.Empty<string>(), state.WindStrength, false, ACLabels.WindStrength, OnWindClick);
-
-            SwingUpDownRow.Visibility = VisibleWhen(caps?.SwingUpDown == true);
-            SwingUpDownToggle.IsChecked = state.SwingUpDown ?? false;
-            SwingLeftRightRow.Visibility = VisibleWhen(caps?.SwingLeftRight == true);
-            SwingLeftRightToggle.IsChecked = state.SwingLeftRight ?? false;
-            DisplayLightRow.Visibility = VisibleWhen(caps?.DisplayLight is not null);
-            DisplayLightToggle.IsChecked = state.DisplayLightOn ?? false;
-            TimerRow.Visibility = VisibleWhen(caps?.OffTimer is not null);
-            TimerText.Text = state.OffTimerRemainingMinutes is { } minutes ? ACLabels.Duration(minutes) : "Desativado";
-            Switches.Visibility = VisibleWhen(
-                SwingUpDownRow.Visibility == Visibility.Visible
-                || SwingLeftRightRow.Visibility == Visibility.Visible
-                || DisplayLightRow.Visibility == Visibility.Visible
-                || TimerRow.Visibility == Visibility.Visible);
-
-            RenderFooter();
+            AmbientText.Text = "Ambiente " + ACLabels.Temperature(current);
+            AmbientText.Visibility = Visibility.Visible;
         }
-        finally
+        else
         {
-            rendering = false;
+            AmbientText.Text = string.Empty;
+            AmbientText.Visibility = Visibility.Collapsed;
         }
+
+        var powerLabel = isOn ? "Desligar" : "Ligar";
+        PowerButton.IsEnabled = caps?.Power == true;
+        PowerButton.SetResourceReference(Control.BackgroundProperty, isOn ? AccentBrushKey : ControlBackgroundBrushKey);
+        PowerButton.SetResourceReference(Control.ForegroundProperty, isOn ? AccentForegroundBrushKey : PanelForegroundBrushKey);
+        PowerButton.ToolTip = powerLabel;
+        AutomationProperties.SetName(PowerButton, powerLabel);
+
+        Body.IsEnabled = isOn;
+        Body.Opacity = isOn ? 1 : DimmedOpacity;
+
+        TemperatureRow.Visibility = VisibleWhen(caps?.TargetTemp is not null);
+        TargetTempText.Text = state.TargetTemp is { } target ? ACLabels.Temperature(target) : "–";
+
+        RenderChoices(ModeSection, ModeGrid, caps?.JobModes ?? Array.Empty<string>(), state.JobMode, true, ACLabels.JobMode, OnModeClick);
+        RenderChoices(WindSection, WindGrid, caps?.WindStrengths ?? Array.Empty<string>(), state.WindStrength, false, ACLabels.WindStrength, OnWindClick);
+
+        SwingUpDownRow.Visibility = VisibleWhen(caps?.SwingUpDown == true);
+        SwingUpDownToggle.IsChecked = state.SwingUpDown ?? false;
+        SwingLeftRightRow.Visibility = VisibleWhen(caps?.SwingLeftRight == true);
+        SwingLeftRightToggle.IsChecked = state.SwingLeftRight ?? false;
+        DisplayLightRow.Visibility = VisibleWhen(caps?.DisplayLight is not null);
+        DisplayLightToggle.IsChecked = state.DisplayLightOn ?? false;
+        TimerRow.Visibility = VisibleWhen(caps?.OffTimer is not null);
+        var timerLabel = state.OffTimerRemainingMinutes is { } minutes ? ACLabels.Duration(minutes) : "Desativado";
+        TimerText.Text = timerLabel;
+        AutomationProperties.SetName(TimerButton, "Desligar em: " + timerLabel);
+        Switches.Visibility = VisibleWhen(
+            SwingUpDownRow.Visibility == Visibility.Visible
+            || SwingLeftRightRow.Visibility == Visibility.Visible
+            || DisplayLightRow.Visibility == Visibility.Visible
+            || TimerRow.Visibility == Visibility.Visible);
+
+        RenderFooter();
     }
 
     private void RenderFooter()
@@ -150,7 +156,7 @@ public partial class ControlPanelView : UserControl
         else if (controller.LastUpdated is { } updated)
         {
             StatusPanel.Visibility = Visibility.Collapsed;
-            UpdatedText.Text = "Atualizado há " + Elapsed(DateTimeOffset.UtcNow - updated);
+            UpdatedText.Text = "Atualizado há " + ElapsedText.Format(DateTimeOffset.UtcNow - updated);
             UpdatedText.Visibility = Visibility.Visible;
         }
         else
@@ -158,12 +164,6 @@ public partial class ControlPanelView : UserControl
             StatusPanel.Visibility = Visibility.Collapsed;
             UpdatedText.Visibility = Visibility.Collapsed;
         }
-    }
-
-    private static string Elapsed(TimeSpan elapsed)
-    {
-        var seconds = (int)Math.Max(0, Math.Floor(elapsed.TotalSeconds));
-        return seconds < 60 ? $"{seconds} s" : ACLabels.Duration(seconds / 60);
     }
 
     private static Visibility VisibleWhen(bool visible)
@@ -330,7 +330,7 @@ public partial class ControlPanelView : UserControl
 
     private void UpdateClock()
     {
-        if (IsVisible && subscribed)
+        if (IsVisible && !disposed)
         {
             clock.Start();
         }
@@ -344,7 +344,10 @@ public partial class ControlPanelView : UserControl
     {
         try
         {
-            Render();
+            if (!disposed)
+            {
+                Render();
+            }
         }
         catch (Exception)
         {
@@ -364,35 +367,11 @@ public partial class ControlPanelView : UserControl
         SafeRender();
     }
 
-    private void OnLoaded(object sender, RoutedEventArgs e)
-    {
-        if (!subscribed)
-        {
-            controller.PropertyChanged += OnControllerPropertyChanged;
-            subscribed = true;
-        }
-
-        SafeRender();
-        UpdateClock();
-    }
-
-    private void OnUnloaded(object sender, RoutedEventArgs e)
-    {
-        if (subscribed)
-        {
-            controller.PropertyChanged -= OnControllerPropertyChanged;
-            subscribed = false;
-        }
-
-        clock.Stop();
-        CloseMenu();
-    }
-
     private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         try
         {
-            if (IsVisible)
+            if (IsVisible && !disposed)
             {
                 RenderFooter();
             }
@@ -412,7 +391,10 @@ public partial class ControlPanelView : UserControl
     {
         try
         {
-            RenderFooter();
+            if (!disposed)
+            {
+                RenderFooter();
+            }
         }
         catch (Exception)
         {
@@ -421,6 +403,11 @@ public partial class ControlPanelView : UserControl
 
     private void OnControllerPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (disposed)
+        {
+            return;
+        }
+
         if (!Dispatcher.CheckAccess())
         {
             Dispatcher.BeginInvoke(new Action(SafeRender));
@@ -434,10 +421,7 @@ public partial class ControlPanelView : UserControl
     {
         try
         {
-            if (!rendering)
-            {
-                await SendAsync(new ACCommand.Power(controller.State?.IsOn != true));
-            }
+            await SendAsync(new ACCommand.Power(controller.State?.IsOn != true));
         }
         catch (Exception)
         {
@@ -458,10 +442,7 @@ public partial class ControlPanelView : UserControl
     {
         try
         {
-            if (!rendering)
-            {
-                controller.StepTargetTemp(steps);
-            }
+            controller.StepTargetTemp(steps);
         }
         catch (Exception)
         {
@@ -472,7 +453,7 @@ public partial class ControlPanelView : UserControl
     {
         try
         {
-            if (!rendering && sender is FrameworkElement { Tag: string mode })
+            if (sender is FrameworkElement { Tag: string mode })
             {
                 await SendAsync(new ACCommand.JobMode(mode));
             }
@@ -486,7 +467,7 @@ public partial class ControlPanelView : UserControl
     {
         try
         {
-            if (!rendering && sender is FrameworkElement { Tag: string speed })
+            if (sender is FrameworkElement { Tag: string speed })
             {
                 await SendAsync(new ACCommand.WindStrength(speed));
             }
@@ -500,10 +481,7 @@ public partial class ControlPanelView : UserControl
     {
         try
         {
-            if (!rendering)
-            {
-                await SendAsync(new ACCommand.SwingUpDown(SwingUpDownToggle.IsChecked == true));
-            }
+            await SendAsync(new ACCommand.SwingUpDown(SwingUpDownToggle.IsChecked == true));
         }
         catch (Exception)
         {
@@ -514,10 +492,7 @@ public partial class ControlPanelView : UserControl
     {
         try
         {
-            if (!rendering)
-            {
-                await SendAsync(new ACCommand.SwingLeftRight(SwingLeftRightToggle.IsChecked == true));
-            }
+            await SendAsync(new ACCommand.SwingLeftRight(SwingLeftRightToggle.IsChecked == true));
         }
         catch (Exception)
         {
@@ -528,10 +503,7 @@ public partial class ControlPanelView : UserControl
     {
         try
         {
-            if (!rendering)
-            {
-                await SendAsync(new ACCommand.DisplayLight(DisplayLightToggle.IsChecked == true));
-            }
+            await SendAsync(new ACCommand.DisplayLight(DisplayLightToggle.IsChecked == true));
         }
         catch (Exception)
         {

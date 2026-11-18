@@ -8,7 +8,7 @@ using LGAC.Core;
 
 namespace LGAC.App.Views;
 
-public partial class DeviceChoiceView : UserControl
+public partial class DeviceChoiceView : UserControl, IDisposable
 {
     private const string ListButtonStyleKey = "ListButton";
     private const string SecondaryForegroundBrushKey = "SecondaryForegroundBrush";
@@ -16,7 +16,7 @@ public partial class DeviceChoiceView : UserControl
     private readonly ACController controller;
     private readonly StartupRegistration startup;
     private ContextMenu? openMenu;
-    private bool subscribed;
+    private bool disposed;
 
     public DeviceChoiceView(ACController controller, StartupRegistration startup, IReadOnlyList<ThinQDevice> devices)
     {
@@ -29,10 +29,21 @@ public partial class DeviceChoiceView : UserControl
             DeviceList.Children.Add(CreateDeviceButton(device));
         }
 
-        Loaded += OnLoaded;
-        Unloaded += OnUnloaded;
         IsVisibleChanged += OnIsVisibleChanged;
+        controller.PropertyChanged += OnControllerPropertyChanged;
         Render();
+    }
+
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        controller.PropertyChanged -= OnControllerPropertyChanged;
+        CloseMenu();
     }
 
     private void Render()
@@ -68,28 +79,6 @@ public partial class DeviceChoiceView : UserControl
         openMenu = null;
     }
 
-    private void OnLoaded(object sender, RoutedEventArgs e)
-    {
-        if (!subscribed)
-        {
-            controller.PropertyChanged += OnControllerPropertyChanged;
-            subscribed = true;
-        }
-
-        SafeRender();
-    }
-
-    private void OnUnloaded(object sender, RoutedEventArgs e)
-    {
-        if (subscribed)
-        {
-            controller.PropertyChanged -= OnControllerPropertyChanged;
-            subscribed = false;
-        }
-
-        CloseMenu();
-    }
-
     private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         if (!IsVisible)
@@ -100,6 +89,11 @@ public partial class DeviceChoiceView : UserControl
 
     private void OnControllerPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (disposed)
+        {
+            return;
+        }
+
         if (!Dispatcher.CheckAccess())
         {
             Dispatcher.BeginInvoke(new Action(SafeRender));
@@ -113,7 +107,10 @@ public partial class DeviceChoiceView : UserControl
     {
         try
         {
-            Render();
+            if (!disposed)
+            {
+                Render();
+            }
         }
         catch (Exception)
         {

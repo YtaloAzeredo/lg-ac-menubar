@@ -9,7 +9,7 @@ using LGAC.Core;
 
 namespace LGAC.App.Views;
 
-public partial class LoadingView : UserControl
+public partial class LoadingView : UserControl, IDisposable
 {
     private static readonly TimeSpan SpinnerPeriod = TimeSpan.FromSeconds(1);
 
@@ -17,7 +17,7 @@ public partial class LoadingView : UserControl
     private readonly StartupRegistration startup;
     private readonly RotateTransform rotation = new();
     private ContextMenu? openMenu;
-    private bool subscribed;
+    private bool disposed;
 
     public LoadingView(ACController controller, StartupRegistration startup)
     {
@@ -26,10 +26,22 @@ public partial class LoadingView : UserControl
         InitializeComponent();
         Spinner.RenderTransform = rotation;
 
-        Loaded += OnLoaded;
-        Unloaded += OnUnloaded;
         IsVisibleChanged += OnIsVisibleChanged;
+        controller.PropertyChanged += OnControllerPropertyChanged;
         Render();
+    }
+
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        controller.PropertyChanged -= OnControllerPropertyChanged;
+        CloseMenu();
+        rotation.BeginAnimation(RotateTransform.AngleProperty, null);
     }
 
     private void Render()
@@ -42,7 +54,7 @@ public partial class LoadingView : UserControl
 
     private void UpdateSpinner()
     {
-        if (IsVisible)
+        if (IsVisible && !disposed)
         {
             var spin = new DoubleAnimation(0, 360, SpinnerPeriod) { RepeatBehavior = RepeatBehavior.Forever };
             rotation.BeginAnimation(RotateTransform.AngleProperty, spin);
@@ -63,29 +75,6 @@ public partial class LoadingView : UserControl
         openMenu = null;
     }
 
-    private void OnLoaded(object sender, RoutedEventArgs e)
-    {
-        if (!subscribed)
-        {
-            controller.PropertyChanged += OnControllerPropertyChanged;
-            subscribed = true;
-        }
-
-        SafeRender();
-    }
-
-    private void OnUnloaded(object sender, RoutedEventArgs e)
-    {
-        if (subscribed)
-        {
-            controller.PropertyChanged -= OnControllerPropertyChanged;
-            subscribed = false;
-        }
-
-        CloseMenu();
-        rotation.BeginAnimation(RotateTransform.AngleProperty, null);
-    }
-
     private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         try
@@ -104,6 +93,11 @@ public partial class LoadingView : UserControl
 
     private void OnControllerPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (disposed)
+        {
+            return;
+        }
+
         if (!Dispatcher.CheckAccess())
         {
             Dispatcher.BeginInvoke(new Action(SafeRender));
@@ -117,7 +111,10 @@ public partial class LoadingView : UserControl
     {
         try
         {
-            Render();
+            if (!disposed)
+            {
+                Render();
+            }
         }
         catch (Exception)
         {

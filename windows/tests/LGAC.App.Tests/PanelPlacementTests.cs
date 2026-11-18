@@ -163,6 +163,66 @@ public sealed class PanelPlacementTests
         Assert.AreEqual(1080, result.Anchor.Top, 0.001);
     }
 
+    [TestMethod]
+    public void HiddenTaskbarWithCursorNearTopAnchorsToTop()
+    {
+        var bounds = new Rectangle(0, 0, 1920, 1080);
+
+        var result = PanelPlacement.FromPixels(bounds, bounds, new Point(900, 10), 1);
+
+        Assert.AreEqual(-1, result.Anchor.Top, 0.001);
+        Assert.AreEqual(900, result.Anchor.Left, 0.001);
+        var panel = PanelPlacement.Compute(result.WorkArea, result.Anchor, Panel);
+        Assert.AreEqual(result.WorkArea.Top + 12, panel.Top, 0.001);
+    }
+
+    [TestMethod]
+    public void HiddenTaskbarWithCursorNearBottomAnchorsToBottom()
+    {
+        var bounds = new Rectangle(0, 0, 1920, 1080);
+
+        var result = PanelPlacement.FromPixels(bounds, bounds, new Point(900, 1070), 1);
+
+        Assert.AreEqual(1080, result.Anchor.Top, 0.001);
+        var panel = PanelPlacement.Compute(result.WorkArea, result.Anchor, Panel);
+        Assert.AreEqual(result.WorkArea.Bottom - Panel.Height - 12, panel.Top, 0.001);
+    }
+
+    [TestMethod]
+    public void HiddenTaskbarWithCursorNearLeftAnchorsToLeft()
+    {
+        var bounds = new Rectangle(0, 0, 1920, 1080);
+
+        var result = PanelPlacement.FromPixels(bounds, bounds, new Point(5, 500), 1);
+
+        Assert.AreEqual(-1, result.Anchor.Left, 0.001);
+        var panel = PanelPlacement.Compute(result.WorkArea, result.Anchor, Panel);
+        Assert.AreEqual(result.WorkArea.Left + 12, panel.Left, 0.001);
+    }
+
+    [TestMethod]
+    public void HiddenTaskbarWithCursorNearRightAnchorsToRight()
+    {
+        var bounds = new Rectangle(0, 0, 1920, 1080);
+
+        var result = PanelPlacement.FromPixels(bounds, bounds, new Point(1915, 500), 1);
+
+        Assert.AreEqual(1920, result.Anchor.Left, 0.001);
+        var panel = PanelPlacement.Compute(result.WorkArea, result.Anchor, Panel);
+        Assert.AreEqual(result.WorkArea.Right - Panel.Width - 12, panel.Left, 0.001);
+    }
+
+    [TestMethod]
+    public void HiddenTaskbarTieBetweenEdgesFavorsBottom()
+    {
+        var bounds = new Rectangle(0, 0, 1080, 1080);
+
+        var result = PanelPlacement.FromPixels(bounds, bounds, new Point(540, 540), 1);
+
+        Assert.AreEqual(1080, result.Anchor.Top, 0.001);
+        Assert.AreEqual(540, result.Anchor.Left, 0.001);
+    }
+
     private static void AssertContained(Rect workArea, Rect panel)
     {
         Assert.IsGreaterThanOrEqualTo(workArea.Left, panel.Left);
