@@ -5,6 +5,7 @@ using LGAC.App.Tray;
 namespace LGAC.App.Tests;
 
 [TestClass]
+[DoNotParallelize]
 public sealed class ModeIconTests
 {
     private const uint GdiObjects = 0;
@@ -33,6 +34,10 @@ public sealed class ModeIconTests
     [TestMethod]
     public void RenderDoesNotLeakHandles()
     {
+        using (var warmUp = ModeIcon.Render("COOL", false, false, 16))
+        {
+        }
+
         using var process = Process.GetCurrentProcess();
         var before = GetGuiResources(process.Handle, GdiObjects);
 

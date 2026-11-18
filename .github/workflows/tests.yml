@@ -21,3 +21,18 @@ jobs:
         run: ./macos/scripts/test.sh
       - name: Empacotar o app (sem instalar)
         run: ./macos/build-app.sh --no-install
+
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: windows/global.json
+      - name: Testes
+        shell: pwsh
+        run: ./windows/scripts/test.ps1
+      - name: Gerar o executável (sem instalar)
+        shell: pwsh
+        run: ./windows/build-app.ps1 -NoInstall
